@@ -1,28 +1,23 @@
 <HTML>
-<header>
+
 <script type="text/javascript" src="test.js" >
 </script>
-</header>
-
 
 <BODY>
-<table border=2'>
+<table border=2 >
 	<td> System Message:</td>
-	<td id="systemMessage"></td>
+	<td id="systemMessage"> </td>
 </table>
 
-	<input type="text" id="itemName"  value="">
-	<button type="button" onClick="addItem(document.getElementById('itemName').value)">입력</button>
-
-<button onClick="showList()" > Show List </button>
+	<input type="text" id="itemName" size=50>
+	<button type="button" onClick="addItem(document.getElementById('itemName').value);showList()">입력</button>
 
 
 <table border=15 id="todoList">
-	<tr><td>hi</td> <td>hello</td></tr> 
-	<tr><td>bye</td><td></td></tr>
 </table>
 
 </BODY>
 
+<script type="text/javascript">init();</script>
 
 </HTML>
