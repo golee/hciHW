@@ -29,7 +29,7 @@ function addItem (item) {
 	// date, deadlines.
 	if ( item === "" )
 	{
-		alert("Enter some text");
+		alert("No input(addItem)");
 		return -1;
 	
 	}

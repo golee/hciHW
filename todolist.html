@@ -5,12 +5,13 @@
 
 <BODY>
 <table border=2 >
-	<td> System Message:</td>
-	<td id="systemMessage"> </td>
+	<tr><td width=300> System Message </td></tr>
+	<tr height=100><td id="systemMessage"></td></tr>
 </table>
+<br />
 
 	<input type="text" id="itemName" size=50>
-	<button type="button" onClick="addItem(document.getElementById('itemName').value);showList()">ют╥б</button>
+	<button type="button" onClick="addItem(document.getElementById('itemName').value);showList()">Insert</button>
 
 
 <table border=15 id="todoList">
