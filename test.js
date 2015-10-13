@@ -1,13 +1,37 @@
 var filePath = "C:/Users/Windforce/Dropbox/HciHw2Todolist/todolist.html";
 var filePath = document.title;
 var list = new Array(100);
+var storage = window.localStorage;
 
 
-function init() {
-	addItem("Go to school");
-	addItem("Eat Dinner");
-	addItem("Go to the bed");
+function init () {
+	callList();
 	showList();
+}
+
+function addDummyList ( ) {
+	
+}
+
+function onInsertButtonClick() {
+	textBox = document.getElementById("itemName");
+	addItem(textBox.value);
+	textBox.value="";
+	showList();
+}
+
+var insertButton = document.getElementById("insertButton");
+insertButton.onclick = onInsertButtonClick;
+
+
+function onDeleteButtonClick() {
+	
+}
+
+
+
+function callList() {
+	list = JSON.parse(storage.getItem("todo"));
 }
 
 function showList () {
@@ -42,12 +66,17 @@ function addItem (item) {
 			break;
 		}
 	}
+	storage.setItem("todo", JSON.stringify(list));
+
 }
 
 // Special effect required (crossing-out)
 // index:Number
 function deleteItem (index) {
+	setSystemMessage("Item Deleted: "+ list[index]);
 	list[index] = null;
+	storage.setItem("todo", JSON.stringify(list));
+	
 	showList();
 }
 // Triangle signal
@@ -72,6 +101,8 @@ function sortItem () {
 function setSystemMessage(message) {
 	document.getElementById("systemMessage").innerHTML = message;
 }
+
+
 
 /* Optional requirements
  *  Analog graphic effects
