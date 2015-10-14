@@ -3,14 +3,35 @@ var filePath = document.title;
 var list = new Array(100);
 var storage = window.localStorage;
 
+var insertButton = document.getElementById("insertButton");
+var dummyButton = document.getElementById("dummyButton");
+var deleteAllButton = document.getElementById("deleteAllButton");
+insertButton.onclick = onInsertButtonClick;
+dummyButton.onclick = addDummyList;
+deleteAllButton.onclick = deleteAll;
 
 function init () {
 	callList();
 	showList();
 }
 
-function addDummyList ( ) {
+function addDummyList ( count ) {
 	
+	addItem("Go to school");
+	addItem("do assignment");
+	addItem("Eat breakfest");
+	addItem("Dinner appointment");
+	addItem("Important meeting");
+	addItem("Tv show");
+	setSystemMessage("Dummies added.");
+	showList();
+	
+}
+function deleteAll () {
+	list = new Array(100);
+	storage.clear();
+	showList();
+	setSystemMessage("Delete all items");
 }
 
 function onInsertButtonClick() {
@@ -19,11 +40,6 @@ function onInsertButtonClick() {
 	textBox.value="";
 	showList();
 }
-
-var insertButton = document.getElementById("insertButton");
-insertButton.onclick = onInsertButtonClick;
-
-
 function onDeleteButtonClick() {
 	
 }
