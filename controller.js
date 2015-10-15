@@ -1,37 +1,42 @@
 var filePath = "C:/Users/Windforce/Dropbox/HciHw2Todolist/todolist.html";
-var filePath = document.title;
-var list = new Array(100);
+var itemArray = [];
+var systemMessageQueue = [];
 var storage = window.localStorage;
 
-var insertButton = document.getElementById("insertButton");
-var dummyButton = document.getElementById("dummyButton");
-var deleteAllButton = document.getElementById("deleteAllButton");
-insertButton.onclick = onInsertButtonClick;
-dummyButton.onclick = addDummyList;
-deleteAllButton.onclick = deleteAll;
+//// localstorage keys
+var TODO_LIST_STORAGE = "todo"
+var SYSTEM_MESSAGE_STORAGE = "sys";
 
 function init () {
+	
+	insertButton = document.getElementById("insertButton");
+	dummyButton = document.getElementById("dummyButton");
+	deleteAllButton = document.getElementById("deleteAllButton");
+	insertButton.onclick = onInsertButtonClick;
+	dummyButton.onclick = addDummyList;
+	deleteAllButton.onclick = deleteAll;	
+	
 	callList();
 	showList();
+	printSystemMessage();
 }
 
 function addDummyList ( count ) {
-	
 	addItem("Go to school");
-	addItem("do assignment");
+	addItem("Do assignment");
 	addItem("Eat breakfest");
 	addItem("Dinner appointment");
 	addItem("Important meeting");
-	addItem("Tv show");
-	setSystemMessage("Dummies added.");
+	addItem("Watch TV show");
+	printSystemMessage("Dummies added.");
 	showList();
-	
 }
+
 function deleteAll () {
-	list = new Array(100);
+	itemArray = [];
 	storage.clear();
 	showList();
-	setSystemMessage("Delete all items");
+	printSystemMessage("Delete all items");
 }
 
 function onInsertButtonClick() {
@@ -40,85 +45,141 @@ function onInsertButtonClick() {
 	textBox.value="";
 	showList();
 }
-function onDeleteButtonClick() {
-	
+
+function onDeleteButtonClick() {	
 }
 
-
-
 function callList() {
-	list = JSON.parse(storage.getItem("todo"));
+	itemArray = JSON.parse(storage.getItem(TODO_LIST_STORAGE));
+	if ( itemArray == null )
+		itemArray = [];
+	systemMessageQueue = JSON.parse(storage.getItem(SYSTEM_MESSAGE_STORAGE));
+	if ( systemMessageQueue == null )
+		systemMessageQueue = [];
 }
 
 function showList () {
 	todoList = "";
-	for (i=0; i<100; i++) {
-		if (list[i] != null)
-			todoList += "<tr><td width=400>" +list[i] + "</td><td><button type=\"button\" onClick=\"deleteItem("+i+")\">Delete</button></td></tr>";
+	for (i in itemArray) {
+		if (itemArray[i] != null)
+			todoList += "<tr><td width=400 id=listIndex"+i+" draggable=true ondragstart=onDragstartList(event) ondrop=drop(event) ondragover=allowDrop(event)" +
+					 " onmousedown=onMousedownList(this) onmouseup=makeWhite(this) onmouseover=onMouseoverList(this) ondragenter=onDragenterList(event) ondragleave=onDragleaveList(event) " +
+				" onmouseout=makeWhite(this) onClick=onClickList("+i+")>" +itemArray[i] + 
+				"</td><td><button type=\"button\" onClick=\"deleteItem("+i+")\">Delete</button></td></tr>";
 		else 
 			;
 	}
-	if ( todoList === "" )
-		todoList = "<tr><td width=400 style='color:red'>!!Nothing to do</td></tr>";
+	if ( todoList == "" )
+		todoList = "<tr><td width=400 style='color:red'><strong>Nothing to do</td></strong></tr>";
 	document.getElementById("todoList").innerHTML = todoList;
+}
+
+function allowDrop(ev) {
+	ev.preventDefault();
+}
+function onDragstartList(ev) {
+    ev.dataTransfer.setData("text", ev.target.id);
+}
+
+// Also index in itemArray is exchanged
+function drop(ev) {
+    ev.preventDefault();
+    data = ev.dataTransfer.getData("text");
+    index = data.charAt(9);
+    thisIndex = ev.target.id.charAt(9);
+    temp = itemArray[index];
+    itemArray[index] = itemArray[thisIndex];
+    itemArray[thisIndex] = temp;
+    storage.setItem(TODO_LIST_STORAGE, JSON.stringify(itemArray));
+    showList();
+}
+function onMousedownList ( obj ) {
+	obj.style.background="lightblue";	
+}
+function makeWhite( obj ) {
+	obj.style.background = "white";
+}
+function onClickList ( index ) {
+	changeTo = prompt("Change to...","");
+	if ( changeTo == null)
+		return;
+	if ( changeItem(index, changeTo) )
+		printSystemMessage("Item changed: "+document.getElementById("listIndex"+index).innerHTML + " > " + changeTo);
+	showList();
+}
+function onMouseoverList ( obj ) {
+	obj.style.background = "gray";
+}
+function onDragenterList ( ev ) {
+	if ( ev.target.id == ev.dataTransfer.getData("text") )
+		;
+	else ev.target.style.background = "pink";
+}
+function onDragleaveList ( ev ) {
+	if ( ev.target.id == ev.dataTransfer.getData("text") )
+		;
+	else ev.target.style.background = "white";
 }
 
 
 // item:String
-function addItem (item) {
+function addItem ( item ) {
 	// date, deadlines.
-	if ( item === "" )
+	if ( item == "" ) 
 	{
 		alert("No input(addItem)");
+		printSystemMessage("No input");
 		return -1;
-	
 	}
-	for (i=0; i<100; i++) {
-		if (list[i] != null)
-			;
-		else {
-			list[i] = item;
-			setSystemMessage("Item added: " + item);
-			break;
-		}
-	}
-	storage.setItem("todo", JSON.stringify(list));
+	itemArray.push(item);
+	printSystemMessage("Item added:" + item);
+	storage.setItem(TODO_LIST_STORAGE, JSON.stringify(itemArray));
 
+}
+
+function changeItem ( index, item ) {
+	if ( item === "" ) {
+		alert("No input(addItem)");
+		return false;
+	}
+	itemArray[index] = item;
+	storage.setItem(TODO_LIST_STORAGE, JSON.stringify(itemArray));
+	return true;
 }
 
 // Special effect required (crossing-out)
 // index:Number
-function deleteItem (index) {
-	setSystemMessage("Item Deleted: "+ list[index]);
-	list[index] = null;
-	storage.setItem("todo", JSON.stringify(list));
-	
+function deleteItem ( index ) {
+	printSystemMessage("Item Deleted: "+ itemArray[index]);
+	itemArray.splice(index, 1);
+	storage.setItem(TODO_LIST_STORAGE, JSON.stringify(itemArray));	
 	showList();
 }
 // Triangle signal
 function halfDeleteItem () {
-	
-}
-
-
-function changeItem () {
-	
 }
 
 function writeMemo () {
-	
 }
 
 function sortItem () {
-	
 }
 
 // message:String
-function setSystemMessage(message) {
-	document.getElementById("systemMessage").innerHTML = message;
+function printSystemMessage ( message ) {
+	if ( message === undefined )
+		;
+	else if ( systemMessageQueue.push(message) === 6 )
+		systemMessageQueue.shift();
+	
+	mqlength = systemMessageQueue.length;
+	systemMessage = "<strong>" + systemMessageQueue[mqlength-1] + "</strong>";
+	for ( i=0 ; i<mqlength-1 ; i++ ) {
+		systemMessage += "<br />" + systemMessageQueue[mqlength-2-i];
+	}
+	document.getElementById("systemMessage").innerHTML = systemMessage;
+	storage.setItem(SYSTEM_MESSAGE_STORAGE, JSON.stringify(systemMessageQueue));
 }
-
-
 
 /* Optional requirements
  *  Analog graphic effects
