@@ -3,6 +3,7 @@ var itemArray = [];
 var systemMessageQueue = [];
 var storage = window.localStorage;
 
+
 //// localstorage keys
 var TODO_LIST_STORAGE = "todo"
 var SYSTEM_MESSAGE_STORAGE = "sys";
@@ -11,24 +12,56 @@ function init () {
 	
 	insertButton = document.getElementById("insertButton");
 	dummyButton = document.getElementById("dummyButton");
+	numberDummyButton = document.getElementById("numberDummyButton");
 	deleteAllButton = document.getElementById("deleteAllButton");
+	testFunctionButton = document.getElementById("testFunctionButton");
+	
+	
 	insertButton.onclick = onInsertButtonClick;
 	dummyButton.onclick = addDummyList;
-	deleteAllButton.onclick = deleteAll;	
+	numberDummyButton.onclick = addNumberDummyList;
+	deleteAllButton.onclick = deleteAll;
+	testFunctionButton.onclick = onTestButtonClick;
+	
+	memoBox = document.getElementById("memoBox");
 	
 	callList();
 	showList();
 	printSystemMessage();
 }
+function onDragStartMemo ( ev ) {
+	
+}
+function onDragEndMemo ( ev ) {
+	ev.target.offsetLeft = ev.clientX;
+	ev.target.offsetTop = ev.clientY;
+	
+}
 
-function addDummyList ( count ) {
+function onTestButtonClick() {
+	makeFloatingMemo("Memo");
+//	Alert.render("ANHELLO WORLD");
+}
+
+function addDummyList ( ) {
+	console.log(i);
 	addItem("Go to school");
 	addItem("Do assignment");
-	addItem("Eat breakfest");
+	addItem("Eat breakfast");
 	addItem("Dinner appointment");
 	addItem("Important meeting");
 	addItem("Watch TV show");
 	printSystemMessage("Dummies added.");
+	showList();
+}
+
+var counter;
+function addNumberDummyList ( ) {	
+	printSystemMessage("NumberDummies added.");
+	if ( counter == undefined)
+		counter = 1;
+	for ( c=0 ; c<5 ; c++ )
+		addItem(counter++);
 	showList();
 }
 
@@ -85,8 +118,8 @@ function onDragstartList(ev) {
 function drop(ev) {
     ev.preventDefault();
     data = ev.dataTransfer.getData("text");
-    index = data.charAt(9);
-    thisIndex = ev.target.id.charAt(9);
+    index = data.slice(9);
+    thisIndex = ev.target.id.slice(9);
     temp = itemArray[index];
     itemArray[index] = itemArray[thisIndex];
     itemArray[thisIndex] = temp;
@@ -121,11 +154,10 @@ function onDragleaveList ( ev ) {
 	else ev.target.style.background = "white";
 }
 
-
 // item:String
 function addItem ( item ) {
 	// date, deadlines.
-	if ( item == "" ) 
+	if ( item == "" )
 	{
 		alert("No input(addItem)");
 		printSystemMessage("No input");
@@ -134,7 +166,6 @@ function addItem ( item ) {
 	itemArray.push(item);
 	printSystemMessage("Item added:" + item);
 	storage.setItem(TODO_LIST_STORAGE, JSON.stringify(itemArray));
-
 }
 
 function changeItem ( index, item ) {
@@ -179,6 +210,45 @@ function printSystemMessage ( message ) {
 	}
 	document.getElementById("systemMessage").innerHTML = systemMessage;
 	storage.setItem(SYSTEM_MESSAGE_STORAGE, JSON.stringify(systemMessageQueue));
+}
+
+function CustomAlert(){
+    this.render = function(dialog){
+        var winW = window.innerWidth;
+        var winH = window.innerHeight;
+        var dialogoverlay = document.getElementById('dialogoverlay');
+        var dialogbox = document.getElementById('dialogbox');
+        dialogoverlay.style.display = "block";
+        dialogoverlay.style.height = winH+"px";
+        dialogbox.style.left = (winW/2) - (400 * .5)+"px";
+        dialogbox.style.top = "100px";
+        dialogbox.style.display = "block";
+        document.getElementById('dialogboxhead').innerHTML = "Message";
+        document.getElementById('dialogboxbody').innerHTML = dialog;
+        document.getElementById('dialogboxfoot').innerHTML = '<button onclick="Alert.ok()">OK</button>';
+    }
+	this.ok = function(){
+		document.getElementById('dialogbox').style.display = "none";
+		document.getElementById('dialogoverlay').style.display = "none";
+	}
+}
+var Alert = new CustomAlert();
+
+function makeFloatingMemo ( dialog ) {
+	memoBox = document.getElementById("memoBox");
+	memoBox.style.display = "block";
+	memoBox.style.top = "50px";
+	memoBox.style.left = "50px";
+	memoBox.style.height = "200px";
+	memoBox.style.width = "400px";
+	memoBox.style.position = "fixed";
+	memoBox.style.background = "pink";
+	memoBox.style.borderRadius = "15px";
+	memoBox.contentEditable = "true";
+	memoBox.style.resize = "both";
+	memoBox.style.overflow = "auto";
+	memoBox.draggable= true;
+	memoBox.innerHTML = dialog;
 }
 
 /* Optional requirements
