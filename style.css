@@ -8,6 +8,7 @@
 	width: 100%;
 	z-index: 10;
 }
+
 #dialogbox{
 	display: none;
 	position: fixed;
@@ -20,3 +21,27 @@
 #dialogbox > div > #dialogboxhead{ background: #666; font-size:19px; padding:10px; color:#CCC; }
 #dialogbox > div > #dialogboxbody{ background:#333; padding:20px; color:#FFF; }
 #dialogbox > div > #dialogboxfoot{ background: #666; padding:10px; text-align:right; }
+
+
+#memoBox{
+	display: none;
+	position: fixed;
+	background: pink;
+	border-radius: 15px;
+	top: 50px;
+	left: 50px;
+	height: 200px;
+	width: 400px;
+	resize: both;
+	overflow: auto;
+}
+#memoContents{
+	position: relative
+	width: inherit-20px	;
+	height: inherit;
+}
+#memoCloseButton{
+	position: absolute;
+	top: 2px;
+	right: 4px;
+}

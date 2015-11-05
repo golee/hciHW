@@ -2,19 +2,26 @@ var filePath = "C:/Users/Windforce/Dropbox/HciHw2Todolist/todolist.html";
 var itemArray = [];
 var systemMessageQueue = [];
 var storage = window.localStorage;
-
+var memoObj = {isActivated:false, title:"", color:"", width:"", height:"", top:"", left:"", contents:""};
 
 //// localstorage keys
-var TODO_LIST_STORAGE = "todo"
+var TODO_LIST_STORAGE = "todo";
+var MEMO_STORAGE = "memo";
 var SYSTEM_MESSAGE_STORAGE = "sys";
 
+var memoBox;
+var memoContents;
 function init () {
 	
+	memoBox = document.getElementById("memoBox");
+	memoContents = document.getElementById("memoContents");
+
 	insertButton = document.getElementById("insertButton");
 	dummyButton = document.getElementById("dummyButton");
 	numberDummyButton = document.getElementById("numberDummyButton");
 	deleteAllButton = document.getElementById("deleteAllButton");
 	testFunctionButton = document.getElementById("testFunctionButton");
+	memoButton = document.getElementById("toggleMemoButton");
 	
 	
 	insertButton.onclick = onInsertButtonClick;
@@ -22,24 +29,73 @@ function init () {
 	numberDummyButton.onclick = addNumberDummyList;
 	deleteAllButton.onclick = deleteAll;
 	testFunctionButton.onclick = onTestButtonClick;
+	memoButton.onclick = onMemoButtonClick;
 	
 	memoBox = document.getElementById("memoBox");
 	
 	callList();
 	showList();
+	callMemo();
 	printSystemMessage();
 }
-function onDragStartMemo ( ev ) {
+function callMemo () {
+	memo = JSON.parse(storage.getItem(MEMO_STORAGE));
+	if ( memo == null )
+		return;
+	else {
+		memoObj = memo;
+		memoBox.style.width = memoObj.width;
+		memoBox.style.height = memoObj.height;
+		memoBox.style.left = memoObj.left;
+		memoBox.style.top = memoObj.top;
+		memoContents.innerHTML = memoObj.contents;
+	}
 	
+	if ( !memo.isActivated )
+		;
+	else
+		makeFloatingMemo();
+}
+function saveMemo () {
+	memoObj.width = memoBox.style.width;
+	memoObj.height = memoBox.style.height;
+	memoObj.left = memoBox.style.left;
+	memoObj.top = memoBox.style.top;
+	memoObj.contents = memoContents.innerHTML;
+	storage.setItem(MEMO_STORAGE, JSON.stringify(memoObj));
+}
+function onMemoButtonClick () {
+	if( !memoObj.isActivated ) {
+		makeFloatingMemo();
+		printSystemMessage("Memo Box on");
+	}
+	else {
+		saveMemo();
+		memoBox.style.display="none";
+		memoObj.isActivated=false;
+		printSystemMessage("Memo Box saved & off")
+	}
+}
+
+function makeFloatingMemo ( ) {
+	memoObj.isActivated = true;
+	memoBox.style.display = "block";
+}
+
+var offsetX;
+var offsetY;
+function onDragStartMemo ( ev ) {
+	offsetX = ev.target.offsetLeft - ev.clientX;
+	offsetY = ev.target.offsetTop - ev.clientY;
 }
 function onDragEndMemo ( ev ) {
-	ev.target.offsetLeft = ev.clientX;
-	ev.target.offsetTop = ev.clientY;
-	
+	//console.log(coord[0]+' '+coord[1]);
+	ev.target.style.left = (offsetX+ev.clientX)+"px";
+	ev.target.style.top = (offsetY+ev.clientY)+"px";
 }
 
 function onTestButtonClick() {
-	makeFloatingMemo("Memo");
+	makeFloatingMemo();
 //	Alert.render("ANHELLO WORLD");
 }
 
@@ -67,7 +123,7 @@ function addNumberDummyList ( ) {
 
 function deleteAll () {
 	itemArray = [];
-	storage.clear();
+	storage.removeItem(TOTO_LIST_STORAGE);
 	showList();
 	printSystemMessage("Delete all items");
 }
@@ -95,7 +151,7 @@ function showList () {
 	todoList = "";
 	for (i in itemArray) {
 		if (itemArray[i] != null)
-			todoList += "<tr><td width=400 id=listIndex"+i+" draggable=true ondragstart=onDragstartList(event) ondrop=drop(event) ondragover=allowDrop(event)" +
+			todoList += "<tr><td width=400 id=listIndex"+i+" draggable=true ondragstart=onDragStart(event) ondrop=drop(event) ondragover=allowDrop(event)" +
 					 " onmousedown=onMousedownList(this) onmouseup=makeWhite(this) onmouseover=onMouseoverList(this) ondragenter=onDragenterList(event) ondragleave=onDragleaveList(event) " +
 				" onmouseout=makeWhite(this) onClick=onClickList("+i+")>" +itemArray[i] + 
 				"</td><td><button type=\"button\" onClick=\"deleteItem("+i+")\">Delete</button></td></tr>";
@@ -108,9 +164,14 @@ function showList () {
 }
 
 function allowDrop(ev) {
+	data = ev.dataTransfer.getData("text");
+	if ( ev.target.id.search("listIndex") === -1 ) 
+		if ( data.search("listIndex") != -1) return;
+	
 	ev.preventDefault();
+
 }
-function onDragstartList(ev) {
+function onDragStart(ev) {
     ev.dataTransfer.setData("text", ev.target.id);
 }
 
@@ -118,13 +179,20 @@ function onDragstartList(ev) {
 function drop(ev) {
     ev.preventDefault();
     data = ev.dataTransfer.getData("text");
-    index = data.slice(9);
-    thisIndex = ev.target.id.slice(9);
-    temp = itemArray[index];
-    itemArray[index] = itemArray[thisIndex];
-    itemArray[thisIndex] = temp;
-    storage.setItem(TODO_LIST_STORAGE, JSON.stringify(itemArray));
-    showList();
+    if ( data.search("listIndex") !== -1 ) {
+    	if ( ev.target.id.search("listIndex") !== -1 ) {
+		    index = data.slice(9);
+		    thisIndex = ev.target.id.slice(9);
+		    temp = itemArray[index];
+		    itemArray[index] = itemArray[thisIndex];
+		    itemArray[thisIndex] = temp;
+		    storage.setItem(TODO_LIST_STORAGE, JSON.stringify(itemArray));
+		    showList();
+    	}
+    }
+    else {
+    	
+    }
 }
 function onMousedownList ( obj ) {
 	obj.style.background="lightblue";	
@@ -233,23 +301,6 @@ function CustomAlert(){
 	}
 }
 var Alert = new CustomAlert();
-
-function makeFloatingMemo ( dialog ) {
-	memoBox = document.getElementById("memoBox");
-	memoBox.style.display = "block";
-	memoBox.style.top = "50px";
-	memoBox.style.left = "50px";
-	memoBox.style.height = "200px";
-	memoBox.style.width = "400px";
-	memoBox.style.position = "fixed";
-	memoBox.style.background = "pink";
-	memoBox.style.borderRadius = "15px";
-	memoBox.contentEditable = "true";
-	memoBox.style.resize = "both";
-	memoBox.style.overflow = "auto";
-	memoBox.draggable= true;
-	memoBox.innerHTML = dialog;
-}
 
 /* Optional requirements
  *  Analog graphic effects

@@ -5,7 +5,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
-<BODY align=center>
+<BODY align=center ondragover="allowDrop(event)">
 
 <div id="dialogoverlay"></div>
 <div id="dialogbox">
@@ -16,7 +16,10 @@
   </div>
 </div>
 
-<div id="memoBox" style="display:none;" ondragend="onDragEndMemo(end)" ondragstart="onDragStartMemo(event)"></div>
+<div id="memoBox" draggable=true style="display:none;" ondragend="onDragEndMemo(event)" ondragstart="onDragStartMemo(event)">
+	<div id="memoCloseButton">x</div>
+	<div id="memoContents" contenteditable="true" ></div>
+</div>
 
 <table border=2 align=center>
 	<tr><td width=500> System Message </td></tr>
@@ -26,6 +29,7 @@
 	</tr>	
 	<tr><td>
 		<button type=button id=deleteAllButton>DeleteAll</button>
+		<button type=button id=toggleMemoButton>Memo on/off</button>
 		<button type=button id=testFunctionButton>testFunc</button>
 	</td></tr>
 </table>
@@ -41,5 +45,4 @@
 
 </BODY>
 <script type="text/javascript">init();</script>
-
 </HTML>
