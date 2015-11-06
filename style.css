@@ -1,6 +1,9 @@
+@import url(http://fonts.googleapis.com/earlyaccess/nanumgothic.css); 
 *{
 	box-sizing: border-box;
-	text-align: center
+	text-align: center;
+	font-family: 'Nanum Gothic';
+	font-size: 18px;
 }
 
 
@@ -64,10 +67,22 @@
 	height: 70%;
 }
 
+#inputBox {
+	position: absolute;
+	top:8px;
+	left:8px;
+	float: top;
+	float: left;
+}
+
 input {
+	padding: 10px;
+	text-align:initial;
 	font-size: 20px;
+	font-weight:bold;
 }
 button {
-	font-size: 20px;
+	background-color:#11AAAA;
+	padding: 10px;
 	background-color: realblack;
 }

@@ -11,12 +11,16 @@ var SYSTEM_MESSAGE_STORAGE = "sys";
 
 var memoBox;
 var memoContents;
+var itemInputForm;
 
 function init () {
 	
 	memoBox = document.getElementById("memoBox");
 	memoContents = document.getElementById("memoContents");
 	memoCloseButton = document.getElementById("memoCloseButton");
+	
+	itemInputForm = document.getElementById("itemName");
+	itemInputForm.focus();
 
 	insertButton = document.getElementById("insertButton");
 	dummyButton = document.getElementById("dummyButton");
@@ -141,9 +145,8 @@ function deleteAll () {
 }
 
 function onInsertButtonClick() {
-	textBox = document.getElementById("itemName");
-	addItem(textBox.value);
-	textBox.value="";
+	addItem(itemInputForm.value);
+	itemInputForm.value="";
 	showList();
 }
 
