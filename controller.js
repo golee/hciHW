@@ -11,10 +11,12 @@ var SYSTEM_MESSAGE_STORAGE = "sys";
 
 var memoBox;
 var memoContents;
+
 function init () {
 	
 	memoBox = document.getElementById("memoBox");
 	memoContents = document.getElementById("memoContents");
+	memoCloseButton = document.getElementById("memoCloseButton");
 
 	insertButton = document.getElementById("insertButton");
 	dummyButton = document.getElementById("dummyButton");
@@ -30,6 +32,7 @@ function init () {
 	deleteAllButton.onclick = deleteAll;
 	testFunctionButton.onclick = onTestButtonClick;
 	memoButton.onclick = onMemoButtonClick;
+	memoCloseButton.onclick = closeMemo;
 	
 	memoBox = document.getElementById("memoBox");
 	
@@ -37,6 +40,13 @@ function init () {
 	showList();
 	callMemo();
 	printSystemMessage();
+}
+function closeMemo () {
+	memoObj.isActivated=false;
+	saveMemo();
+	memoBox.style.display="none";
+	printSystemMessage("Memo Box saved & off")
+	
 }
 function callMemo () {
 	memo = JSON.parse(storage.getItem(MEMO_STORAGE));
@@ -70,10 +80,7 @@ function onMemoButtonClick () {
 		printSystemMessage("Memo Box on");
 	}
 	else {
-		saveMemo();
-		memoBox.style.display="none";
-		memoObj.isActivated=false;
-		printSystemMessage("Memo Box saved & off")
+		closeMemo();
 	}
 }
 
@@ -92,6 +99,7 @@ function onDragEndMemo ( ev ) {
 	//console.log(coord[0]+' '+coord[1]);
 	ev.target.style.left = (offsetX+ev.clientX)+"px";
 	ev.target.style.top = (offsetY+ev.clientY)+"px";
+	saveMemo();
 }
 
 function onTestButtonClick() {
@@ -123,7 +131,7 @@ function addNumberDummyList ( ) {
 
 function deleteAll () {
 	itemArray = [];
-	storage.removeItem(TOTO_LIST_STORAGE);
+	storage.removeItem(TODO_LIST_STORAGE);
 	showList();
 	printSystemMessage("Delete all items");
 }

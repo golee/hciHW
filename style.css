@@ -1,3 +1,9 @@
+*{
+	box-sizing: border-box;
+	text-align: center;
+}
+
+
 #dialogoverlay{
 	display: none;
 	opacity: .8;
@@ -25,6 +31,7 @@
 
 #memoBox{
 	display: none;
+	padding: 10px;
 	position: fixed;
 	background: pink;
 	border-radius: 15px;
@@ -35,13 +42,24 @@
 	resize: both;
 	overflow: auto;
 }
-#memoContents{
-	position: relative
-	width: inherit-20px	;
-	height: inherit;
+
+#memoTitle{
+	position: fixed;
+	height: 1em;
+	width: inherit;
+	border: 1px solid;
+	border-radius: 15px;
 }
 #memoCloseButton{
 	position: absolute;
 	top: 2px;
 	right: 4px;
+	height: inherit
+	border: 1px solid;
+	border-radius: 15px;
+}
+#memoContents{
+	width: inherit-20px	;
+	height:inherit;
+	
 }
