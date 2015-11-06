@@ -33,8 +33,11 @@ function init () {
 	testFunctionButton.onclick = onTestButtonClick;
 	memoButton.onclick = onMemoButtonClick;
 	memoCloseButton.onclick = closeMemo;
-	
-	memoBox = document.getElementById("memoBox");
+		
+	var els = document.getElementsByClassName('resizable');
+	for(var i=0, len=els.length; i<len; ++i){
+	    els[i].onmouseover = resizableStart;
+	}
 	
 	callList();
 	showList();
@@ -56,7 +59,7 @@ function callMemo () {
 		memoObj = memo;
 		memoBox.style.width = memoObj.width;
 		memoBox.style.height = memoObj.height;
-		memoBox.style.left = memoObj.left;
+		memoBox.style.left	 = memoObj.left;
 		memoBox.style.top = memoObj.top;
 		memoContents.innerHTML = memoObj.contents;
 	}
@@ -87,6 +90,7 @@ function onMemoButtonClick () {
 function makeFloatingMemo ( ) {
 	memoObj.isActivated = true;
 	memoBox.style.display = "block";
+	saveMemo();
 }
 
 var offsetX;
@@ -103,7 +107,7 @@ function onDragEndMemo ( ev ) {
 }
 
 function onTestButtonClick() {
-	makeFloatingMemo();
+	//makeFloatingMemo();
 //	Alert.render("ANHELLO WORLD");
 }
 
@@ -309,6 +313,35 @@ function CustomAlert(){
 	}
 }
 var Alert = new CustomAlert();
+
+
+function resizableStart(e){
+    this.originalW = this.clientWidth;
+    this.originalH = this.clientHeight;
+    this.onmousemove = resizableCheck;
+    this.onmouseup = this.onmouseout = resizableEnd;
+}
+function resizableCheck(e){
+    if(this.clientWidth !== this.originalW || this.clientHeight !== this.originalH) {
+        this.originalX = e.clientX;
+        this.originalY = e.clientY;
+        this.onmousemove = resizableMove;
+    }
+}
+function resizableMove(e){
+    var newW = this.originalW + e.clientX - this.originalX,
+        newH = this.originalH + e.clientY - this.originalY;
+    if(newW < this.originalW){
+        this.style.width = newW + 'px';
+    }
+    if(newH < this.originalH){
+        this.style.height = newH + 'px';
+    }
+}
+function resizableEnd(){
+    this.onmousemove = this.onmouseout = this.onmouseup = null;
+}
+
 
 /* Optional requirements
  *  Analog graphic effects
