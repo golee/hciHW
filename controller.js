@@ -12,6 +12,9 @@ var SYSTEM_MESSAGE_STORAGE = "sys";
 var memoBox;
 var memoContents;
 var itemInputForm;
+var insertButton
+var hideInputBoxButton;
+
 
 function init () {
 	
@@ -23,6 +26,7 @@ function init () {
 	itemInputForm.focus();
 
 	insertButton = document.getElementById("insertButton");
+	hideInputBoxButton = document.getElementById("hideInputBoxButton");
 	dummyButton = document.getElementById("dummyButton");
 	numberDummyButton = document.getElementById("numberDummyButton");
 	deleteAllButton = document.getElementById("deleteAllButton");
@@ -31,12 +35,14 @@ function init () {
 	
 	
 	insertButton.onclick = onInsertButtonClick;
+	hideInputBoxButton.onclick = hideInputBox;
 	dummyButton.onclick = addDummyList;
 	numberDummyButton.onclick = addNumberDummyList;
 	deleteAllButton.onclick = deleteAll;
 	testFunctionButton.onclick = onTestButtonClick;
 	memoButton.onclick = onMemoButtonClick;
 	memoCloseButton.onclick = closeMemo;
+	
 		
 	var els = document.getElementsByClassName('resizable');
 	for(var i=0, len=els.length; i<len; ++i){
@@ -48,6 +54,22 @@ function init () {
 	callMemo();
 	printSystemMessage();
 }
+
+function hideInputBox () {
+	if ( hideInputBoxButton.innerHTML === "&lt;" ) {
+		itemInputForm.style.display = "none";
+		insertButton.style.display = "none";
+		hideInputBoxButton.innerHTML = ">";
+	}
+	else
+	{
+		itemInputForm.style.display = "initial";
+		insertButton.style.display = "initial";
+		hideInputBoxButton.innerHTML = "<";
+	}
+	
+}
+
 function closeMemo () {
 	memoObj.isActivated=false;
 	saveMemo();
