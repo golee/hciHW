@@ -7,21 +7,10 @@
 </head>
 <BODY ondragover="allowDrop(event)">
 
-<div id="dialogoverlay"></div>
-<div id="dialogbox">
-  <div>
-    <div id="dialogboxhead"></div>
-    <div id="dialogboxbody"></div>
-    <div id="dialogboxfoot"></div>
-  </div>
+<div id="memoLayer">
+<div class="resizable" id="memoBox" draggable=true style="display:none;" ondragend="onDragEndMemo(event, this)" ondragstart="onDragStartMemo(event, this)">
+	
 </div>
-
-<div class="resizable" id="memoBox" draggable=true style="display:none;" ondragend="onDragEndMemo(event)" ondragstart="onDragStartMemo(event)">
-	<div id="memoTitle">
-	Title
-		<div id="memoCloseButton">x</div>
-	</div>
-	<div id="memoContents" contenteditable="true" ></div>
 </div>
 
 <div>
@@ -34,13 +23,14 @@
 	<tr><td>
 		<button type=button id=deleteAllButton>DeleteAll</button>
 		<button type=button id=toggleMemoButton>Memo on/off</button>
+		<button type=button id=addMemoButton>Add memo</button>
 		<button type=button id=testFunctionButton>testFunc</button>
 	</td></tr>
 </table>
 </div>
 <br />
 <div id="inputBox">
-	<input type="text" id="itemName">
+	<input type="text" id="inputArea" onkeypress="if(event.keyCode==13) {onInsertButtonClick(); }">
 	<button type="button" id="insertButton" >Insert</button>
 	<button type="button" id="hideInputBoxButton"><</button>
 </div>

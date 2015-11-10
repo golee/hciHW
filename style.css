@@ -1,90 +1,117 @@
 @import url(http://fonts.googleapis.com/earlyaccess/nanumgothic.css); 
 *{
 	box-sizing: border-box;
-	text-align: center;
 	font-family: 'Nanum Gothic';
 	font-size: 18px;
+	border-radius: 5px;
 }
 
-
-#dialogoverlay{
-	display: none;
-	opacity: .8;
-	position: fixed;
-	top: 0px;
-	left: 0px;
-	background: #FFF;
-	width: 100%;
-	z-index: 10;
+.opaque{
+	opacity: 1;
 }
 
-#dialogbox{
-	display: none;
-	position: fixed;
-	background: #3d3d3d;
-	border-radius:7px; 
-	width:400px;
-	z-index: 10;
+table * {
+	text-align: center	;
 }
-#dialogbox > div{ background:#FFF; margin:8px; }
-#dialogbox > div > #dialogboxhead{ background: #666; font-size:19px; padding:10px; color:#CCC; }
-#dialogbox > div > #dialogboxbody{ background:#333; padding:20px; color:#FFF; }
-#dialogbox > div > #dialogboxfoot{ background: #666; padding:10px; text-align:right; }
 
+input[type="text"] {
+	padding: 10px;
+	text-align:initial;
+	font-size: 20px;
+	font-weight:bold;
+	border-radius: 10px;
+}
+input[type="color"] {
+	background-color: inherit;
+	padding: 0px;
+	height: inherit;
+}
+button {
+	background-color:#c0c0c0;
+	padding: 10px;
+}
 
-#memoBox{
-	box-shadow: 0px 2px 4px 2px gray;
-	display: none;
+.transparentButton {
+	opacity: 0.5;
+}
+.transparentButton:hover {
+	opacity: 1;
+	font-weight: bold;
+}
+
+.tableList {
+	
+}
+.tableList:acitve {
+	background-color: darkgray;
+}
+.tableList:hover {
+	background-color: lightblue;
+}
+.tableList:focus {
+	background-color: lightgreen;	
+}
+
+.memoBox{
+	box-shadow: 0px 2px 2px 1px gray;
 	position: fixed;
-	background: lightpink;
-	border-radius: 15px;
+	background-color: lightpink;
 	top: 50px;
 	left: 50px;
-	height: 200px;
-	width: 400px;
+	min-height: 200px;
+	min-width: 200px;
 	resize: both;
-	overflow: auto;
+	overflow:auto;
 }
-
-#memoTitle{
-	float: top;
-	height: 1.5em;
-	width: 100%;
-	border-bottom: 1px solid;
-	border-radius: 15px;
-	border-color: lightblue;
+.memoTitle{
+	background-color:rgba(100,100,100,0.3);
+	position: fixed;
+	height: 2em;
+	width: inherit;
 }
-#memoCloseButton{
+.memoColorButton{
 	position: absolute;
-	top: 2px;
-	right: 4px;
-	height: inherit
-	border: 1px solid;
-	border-radius: 15px;
+	height: inherit;
+	top: 0px;
+	right: 10%;
 }
-#memoContents{
+.memoCloseButton{
+	text-align: center;
+	position: absolute;
+	height: inherit;
+	line-height: 2em;
+	width: 10%;
+	right: 0px;
+	top: 0px;
+}
+.memoContents{
+	text-align: left;
+	text-indent: 1em;
+	position: absolute;
 	width: 100%;
-	height: 70%;
+	height: auto;
+	top: 2em;
+	bottom: 10px;
+	overflow: vertical;	
 }
 
 #inputBox {
 	position: fixed;
 	top:8px;
 	left:8px;
-	float: top;
-	float: left;
 	background-color: lightblue;
 	padding: 5px;
+	height: 60px;
+	width: 400px;
+	overflow: hidden;
+	transition: width .1s linear;
 }
-
-input {
-	padding: 10px;
-	text-align:initial;
-	font-size: 20px;
-	font-weight:bold;
+#insertButton {
+	width: 20%;
 }
-button {
-	background-color:#c0c0c0;
-	padding: 10px;
-	background-color: realblack;
+#inputArea {
+	width: 65%;
+}
+#hideInputBoxButton {
+	position:relative;
 }

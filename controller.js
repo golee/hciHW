@@ -2,37 +2,39 @@ var filePath = "C:/Users/Windforce/Dropbox/HciHw2Todolist/todolist.html";
 var itemArray = [];
 var systemMessageQueue = [];
 var storage = window.localStorage;
-var memoObj = {isActivated:false, title:"", color:"", width:"", height:"", top:"", left:"", contents:""};
 
 //// localstorage keys
 var TODO_LIST_STORAGE = "todo";
 var MEMO_STORAGE = "memo";
 var SYSTEM_MESSAGE_STORAGE = "sys";
+var MEMO_ID_STORAGE= "memoid";
+var MEMO_ID=0;
 
-var memoBox;
-var memoContents;
-var itemInputForm;
+var memoArray = []; // Array of memoObj
+var memoLayer;
+var inputBox
+var inputArea;
 var insertButton
 var hideInputBoxButton;
 
-
 function init () {
+	memoLayer = document.getElementById("memoLayer");
 	
-	memoBox = document.getElementById("memoBox");
-	memoContents = document.getElementById("memoContents");
-	memoCloseButton = document.getElementById("memoCloseButton");
-	
-	itemInputForm = document.getElementById("itemName");
-	itemInputForm.focus();
-
+	inputArea = document.getElementById("inputArea");
+	inputArea.focus();
+	inputBox = document.getElementById("inputBox");
 	insertButton = document.getElementById("insertButton");
 	hideInputBoxButton = document.getElementById("hideInputBoxButton");
+	inputArea = document.getElementById("inputArea");
+	
+	inputBox.addEventListener("transitionend", function ()  { if ( hideInputBoxButton.innerHTML === "&gt;" ) {inputArea.style.display="none"; insertButton.style.display="none";}});
+	
 	dummyButton = document.getElementById("dummyButton");
 	numberDummyButton = document.getElementById("numberDummyButton");
 	deleteAllButton = document.getElementById("deleteAllButton");
 	testFunctionButton = document.getElementById("testFunctionButton");
-	memoButton = document.getElementById("toggleMemoButton");
-	
+	toggleMemoButton = document.getElementById("toggleMemoButton");
+	addMemoButton = document.getElementById("addMemoButton");
 	
 	insertButton.onclick = onInsertButtonClick;
 	hideInputBoxButton.onclick = hideInputBox;
@@ -40,105 +42,164 @@ function init () {
 	numberDummyButton.onclick = addNumberDummyList;
 	deleteAllButton.onclick = deleteAll;
 	testFunctionButton.onclick = onTestButtonClick;
-	memoButton.onclick = onMemoButtonClick;
-	memoCloseButton.onclick = closeMemo;
-	
-		
+	toggleMemoButton.onclick = toggleMemo;
+	addMemoButton.onclick = addMemo;
+
 	var els = document.getElementsByClassName('resizable');
 	for(var i=0, len=els.length; i<len; ++i){
 	    els[i].onmouseover = resizableStart;
 	}
 	
+	MEMO_ID = storage.getItem(MEMO_ID_STORAGE);
 	callList();
 	showList();
-	callMemo();
 	printSystemMessage();
+}
+
+var memoPositionOffset = 0;
+function memoObj () {
+	var obj = this;
+	this.div = document.createElement("DIV");
+	this.div.setAttribute("class", "memoBox resizable");
+	this.div.setAttribute("draggable", "true");
+	memoLayer.appendChild(this.div);
+	
+	this.isActivated=false;
+	this.id = "memoID="+(MEMO_ID++);
+	storage.setItem(MEMO_ID_STORAGE, MEMO_ID)
+	this.title="";
+	this.color= this.div.style.backgroundColor ="lightblue";
+	this.width= this.div.style.width = "200px";
+	this.height = this.div.style.height = "200px";
+	this.top = this.div.style.top = (100+memoPositionOffset++*15)+"px";
+	this.left = this.div.style.left = (50+memoPositionOffset*15)+"px";
+	this.contents = "";
+	this.div.ondragend = onDragEndMemo;
+	this.div.ondragstart = onDragStartMemo;
+	this.div.innerHTML = "<div class='memoTitle'>" +
+			"<div class='memoCloseButton transparentButton'>X</div>" +
+			"<div class='memoColorButton transparentButton'> <input type='color' class='memoColor' oninput='pickColor(this)'></div>" +
+			"	</div>	<div class='memoContents' contenteditable='true' ></div>";
+	
+	this.div.style.display = "none";
+	this.closeButton = this.div.children[0].children[0];
+	this.colorButton = this.div.children[0].children[1];
+	this.contentArea = this.div.children[1];
+	this.closeButton.onclick = function () {
+		obj.div.style.display = "none";
+		var i=0;
+		for ( i=0, len=memoArray.length; i<len; i++ )
+			if ( memoArray[i] === obj ) break;
+		delete memoArray[i];
+		clearNullFromArray(memoArray);
+	};
+	
+	this.makeVisible = function () {
+		if ( this.isActivated ) {
+			this.isActivated = false;
+			this.div.style.display = "none";
+		}		
+		else {
+			this.isActivated = true;
+			this.div.style.display = "block";
+		}
+	}
+	this.saveMemo = function () {
+		this.width = this.div.style.width;
+		this.height = this.div.style.height;
+		this.left = this.div.style.left;
+		this.top = this.div.style.top;
+		this.color = this.div.style.backgroundColor;
+		this.contents = this.contentArea.innerHTML;
+	}
+	return this;
+}
+
+
+
+function clearNullFromArray ( arr ) {
+	counter = 0;
+	for ( var i=0, len=arr.length; i<len; i++ )
+		if ( arr[i] === null || arr[i] === undefined )
+			counter++;
+	arr.sort();
+	for ( var i=0; i<counter; i++ )
+		arr.pop();
 }
 
 function hideInputBox () {
 	if ( hideInputBoxButton.innerHTML === "&lt;" ) {
-		itemInputForm.style.display = "none";
-		insertButton.style.display = "none";
+		inputBox.style.width = "45px"
 		hideInputBoxButton.innerHTML = ">";
 	}
 	else
 	{
-		itemInputForm.style.display = "initial";
+		inputArea.style.display = "initial";
 		insertButton.style.display = "initial";
+		inputBox.style.width = "400px";
 		hideInputBoxButton.innerHTML = "<";
 	}
-	
 }
-
-function closeMemo () {
-	memoObj.isActivated=false;
-	saveMemo();
-	memoBox.style.display="none";
-	printSystemMessage("Memo Box saved & off")
+function addMemo () {
+	obj = new memoObj();
+	memoArray.push(obj);
+	obj.makeVisible();
+}
+function closeAllMemo () {
 	
 }
 function callMemo () {
-	memo = JSON.parse(storage.getItem(MEMO_STORAGE));
-	if ( memo == null )
+	memoArray = JSON.parse(storage.getItem(MEMO_STORAGE));
+	if ( memoArray == null )
 		return;
 	else {
-		memoObj = memo;
-		memoBox.style.width = memoObj.width;
-		memoBox.style.height = memoObj.height;
-		memoBox.style.left	 = memoObj.left;
-		memoBox.style.top = memoObj.top;
-		memoContents.innerHTML = memoObj.contents;
+		for ( i=0; i<memoArray.length; i++ ) {
+			memoBox.style.width = memoArray[i].width;
+			memoBox.style.height = memoArray[i].height;
+			memoBox.style.left	 = memoArray[i].left;
+			memoBox.style.top = memoArray[i].top;
+			memoBox.style.backgroundColor = memoArray[i].color;
+			memoBox.style.color = decideFontColor(memoArray[i].color);
+			memoContents.innerHTML = memoArray[i].contents;
+		}
 	}
-	
-	if ( !memo.isActivated )
+	if ( !memoArray.isActivated )
 		;
 	else
-		makeFloatingMemo();
+		memoArray[i].makeVisible();
 }
-function saveMemo () {
+function saveMemo ( memoObj ) {
 	memoObj.width = memoBox.style.width;
 	memoObj.height = memoBox.style.height;
 	memoObj.left = memoBox.style.left;
 	memoObj.top = memoBox.style.top;
+	memoObj.color = memoBox.style.backgroundColor;
 	memoObj.contents = memoContents.innerHTML;
-	storage.setItem(MEMO_STORAGE, JSON.stringify(memoObj));
+	//storage.setItem(MEMO_STORAGE, JSON.stringify(memoObj));
 }
-function onMemoButtonClick () {
-	if( !memoObj.isActivated ) {
-		makeFloatingMemo();
-		printSystemMessage("Memo Box on");
-	}
-	else {
-		closeMemo();
-	}
-}
-
-function makeFloatingMemo ( ) {
-	memoObj.isActivated = true;
-	memoBox.style.display = "block";
-	saveMemo();
+function toggleMemo () {
+	clearNullFromArray(memoArray);
+	for ( var i=0; i<memoArray.length; i++ )
+		memoArray[i].makeVisible();
 }
 
 var offsetX;
 var offsetY;
-function onDragStartMemo ( ev ) {
-	offsetX = ev.target.offsetLeft - ev.clientX;
-	offsetY = ev.target.offsetTop - ev.clientY;
+function onDragStartMemo (ev ) {
+	offsetX = this.offsetLeft - ev.clientX;
+	offsetY = this.offsetTop - ev.clientY;
 }
-function onDragEndMemo ( ev ) {
-	//console.log(coord[0]+' '+coord[1]);
-	ev.target.style.left = (offsetX+ev.clientX)+"px";
-	ev.target.style.top = (offsetY+ev.clientY)+"px";
-	saveMemo();
+function onDragEndMemo ( ev) {
+	this.style.left = (offsetX+ev.clientX)+"px";
+	this.style.top = (offsetY+ev.clientY)+"px";
+	//saveMemo( memoObj );
 }
 
 function onTestButtonClick() {
-	//makeFloatingMemo();
 //	Alert.render("ANHELLO WORLD");
 }
 
 function addDummyList ( ) {
-	console.log(i);
 	addItem("Go to school");
 	addItem("Do assignment");
 	addItem("Eat breakfast");
@@ -167,12 +228,9 @@ function deleteAll () {
 }
 
 function onInsertButtonClick() {
-	addItem(itemInputForm.value);
-	itemInputForm.value="";
+	addItem(inputArea.value);
+	inputArea.value="";
 	showList();
-}
-
-function onDeleteButtonClick() {	
 }
 
 function callList() {
@@ -188,9 +246,8 @@ function showList () {
 	todoList = "";
 	for (i in itemArray) {
 		if (itemArray[i] != null)
-			todoList += "<tr><td width=400 id=listIndex"+i+" draggable=true ondragstart=onDragStart(event) ondrop=drop(event) ondragover=allowDrop(event)" +
-					 " onmousedown=onMousedownList(this) onmouseup=makeWhite(this) onmouseover=onMouseoverList(this) ondragenter=onDragenterList(event) ondragleave=onDragleaveList(event) " +
-				" onmouseout=makeWhite(this) onClick=onClickList("+i+")>" +itemArray[i] + 
+			todoList += "<tr><td width=400 class='tableList' id=listIndex"+i+" draggable=true ondragstart=onDragStart(event) ondrop=drop(event) ondragover=allowDrop(event)" +
+					 " ondragenter=onDragenterList(event) ondragleave=onDragleaveList(event) ondblclick=modifyItem(this)>" +itemArray[i] + 
 				"</td><td><button type=\"button\" onClick=\"deleteItem("+i+")\">Delete</button></td></tr>";
 		else 
 			;
@@ -204,9 +261,7 @@ function allowDrop(ev) {
 	data = ev.dataTransfer.getData("text");
 	if ( ev.target.id.search("listIndex") === -1 ) 
 		if ( data.search("listIndex") != -1) return;
-	
 	ev.preventDefault();
-
 }
 function onDragStart(ev) {
     ev.dataTransfer.setData("text", ev.target.id);
@@ -228,25 +283,22 @@ function drop(ev) {
     	}
     }
     else {
-    	
     }
 }
-function onMousedownList ( obj ) {
-	obj.style.background="lightblue";	
+function modifyItem ( obj ) {
+	obj.contentEditable=true;	
+	obj.onblur = modify;
 }
-function makeWhite( obj ) {
-	obj.style.background = "white";
-}
-function onClickList ( index ) {
-	changeTo = prompt("Change to...","");
-	if ( changeTo == null)
+function modify () {
+	this.contentEditable=false;
+	index = this.id.slice(9);	
+	if ( this.innerHTML === undefined )
 		return;
-	if ( changeItem(index, changeTo) )
-		printSystemMessage("Item changed: "+document.getElementById("listIndex"+index).innerHTML + " > " + changeTo);
+	else
+		if ( changeItem(index, this.innerHTML) )
+			printSystemMessage("Item changed: >" + this.innerHTML);
+	
 	showList();
-}
-function onMouseoverList ( obj ) {
-	obj.style.background = "gray";
 }
 function onDragenterList ( ev ) {
 	if ( ev.target.id == ev.dataTransfer.getData("text") )
@@ -291,14 +343,20 @@ function deleteItem ( index ) {
 	storage.setItem(TODO_LIST_STORAGE, JSON.stringify(itemArray));	
 	showList();
 }
-// Triangle signal
-function halfDeleteItem () {
-}
 
-function writeMemo () {
+function pickColor ( obj ) {
+	printSystemMessage(obj.value);
+	obj.parentNode.parentNode.parentNode.style.backgroundColor = obj.value;
+	obj.parentNode.parentNode.parentNode.style.color = decideFontColor(obj.parentNode.parentNode.parentNode.style.backgroundColor);
 }
-
-function sortItem () {
+function decideFontColor(colorValue){
+    colorValue = colorValue.replace('rgb(','');
+    colorValue = colorValue.replace(')','');
+    arr = colorValue.split(", ");
+    if ( Number(arr[0])+Number(arr[1])+Number(arr[2]) < 500)
+    	return "white";
+    else
+    	return "black";
 }
 
 // message:String
@@ -316,29 +374,6 @@ function printSystemMessage ( message ) {
 	document.getElementById("systemMessage").innerHTML = systemMessage;
 	storage.setItem(SYSTEM_MESSAGE_STORAGE, JSON.stringify(systemMessageQueue));
 }
-
-function CustomAlert(){
-    this.render = function(dialog){
-        var winW = window.innerWidth;
-        var winH = window.innerHeight;
-        var dialogoverlay = document.getElementById('dialogoverlay');
-        var dialogbox = document.getElementById('dialogbox');
-        dialogoverlay.style.display = "block";
-        dialogoverlay.style.height = winH+"px";
-        dialogbox.style.left = (winW/2) - (400 * .5)+"px";
-        dialogbox.style.top = "100px";
-        dialogbox.style.display = "block";
-        document.getElementById('dialogboxhead').innerHTML = "Message";
-        document.getElementById('dialogboxbody').innerHTML = dialog;
-        document.getElementById('dialogboxfoot').innerHTML = '<button onclick="Alert.ok()">OK</button>';
-    }
-	this.ok = function(){
-		document.getElementById('dialogbox').style.display = "none";
-		document.getElementById('dialogoverlay').style.display = "none";
-	}
-}
-var Alert = new CustomAlert();
-
 
 function resizableStart(e){
     this.originalW = this.clientWidth;
@@ -366,7 +401,6 @@ function resizableMove(e){
 function resizableEnd(){
     this.onmousemove = this.onmouseout = this.onmouseup = null;
 }
-
 
 /* Optional requirements
  *  Analog graphic effects
