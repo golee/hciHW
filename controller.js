@@ -1,201 +1,276 @@
 var filePath = "C:/Users/Windforce/Dropbox/HciHw2Todolist/todolist.html";
-var itemArray = [];
+
 var systemMessageQueue = [];
 var storage = window.localStorage;
 
 //// localstorage keys
-var TODO_LIST_STORAGE = "todo";
-var MEMO_STORAGE = "memo";
 var SYSTEM_MESSAGE_STORAGE = "sys";
-var MEMO_ID_STORAGE= "memoid";
-var MEMO_ID=0;
+var LAST_DATE = "lastdate";
 
-var memoArray = []; // Array of memoObj
-var memoLayer;
 var inputBox
 var inputArea;
 var insertButton
 var hideInputBoxButton;
+var menuBox;
+var shiftButton;
+var archiveButton;
+var archiveArea;
+var archiveTable;
+var archiveTitle;
+
+var itemControlBox;
+var modifyInputArea;
+var modifyButton;
+var deleteButton;
+var boxCloseButton;
+var dateInputArea; 
+var setDeadlineButton;
+var addChildButton;
+
+var listLayer;
+var todayArea;
+var newDayArea;
+var todayListTable;
+var newDayTable;
+var deadlineTable;
+var todayTitle;
+var newDayTitle;
 
 function init () {
+	
 	memoLayer = document.getElementById("memoLayer");
 	
+	listLayer = document.getElementById("listLayer");
+	todayArea = document.getElementById("todayArea");
+	newDayArea = document.getElementById("newDayArea");
+	todayListTable = document.getElementById("todayListTable");
+	newDayTable = document.getElementById("newDayTable");
+	deadlineTable = document.getElementById("deadlineTable");
+	todayTitle = document.getElementById("todayTitle");
+	newDayTitle = document.getElementById("newDayTitle");
+	
+	inputBox = document.getElementById("inputBox");
 	inputArea = document.getElementById("inputArea");
 	inputArea.focus();
-	inputBox = document.getElementById("inputBox");
 	insertButton = document.getElementById("insertButton");
-	hideInputBoxButton = document.getElementById("hideInputBoxButton");
-	inputArea = document.getElementById("inputArea");
 	
-	inputBox.addEventListener("transitionend", function ()  { if ( hideInputBoxButton.innerHTML === "&gt;" ) {inputArea.style.display="none"; insertButton.style.display="none";}});
+	itemControlBox = document.getElementById("itemControlBox");
+	modifyInputArea = document.getElementById("modifyInputArea");
+	modifyButton = document.getElementById("modifyButton");
+	addChildButton = document.getElementById("addChildButton");
+	deleteButton = document.getElementById("deleteButton");
+	dateInputArea = document.getElementById("dateInputArea");
+	dateInputArea.min = new Date().toISOString().slice(0,10);
+	setDeadlineButton = document.getElementById("setDeadlineButton");
+	boxCloseButton = document.getElementById("closeButton");
+	boxCloseButton.onclick = hideControlBox;
+	boxCloseButton.target ="";
+	shiftButton = document.getElementById("shiftButton");
+	shiftButton.setAttribute("onclick", "makeNewDayList();shiftOneDay();");
+	archiveArea = document.getElementById("archiveArea");
+	archiveTable= document.getElementById("archiveTable");
+	archiveTitle = document.getElementById("archiveTitle");
+	archiveButton = document.getElementById("archiveButton");
+	archiveButton.onclick = onArchiveButtonClick;
+	deadlineArea = document.getElementById("deadlineArea");
+	
+	cloudBox = document.getElementsByClassName("cloudBox");
+	for ( i=0; i<cloudBox.length; i++ ) {
+		cloudBox[i].setAttribute("ontransitionend", "onCloudBoxTransitionEnd(this)");
+		cloudBox[i].setAttribute("ondragend", "onDragEndMemo(event, this)");
+		cloudBox[i].setAttribute("ondragstart", "onDragStartMemo(event, this)");
+	}
+	deadlineArea.setAttribute("ontransitionend", "onCloudBoxTransitionEnd(this)");
+	deadlineArea.setAttribute("ondragend", "onDragEndMemo(event, this)");
+	deadlineArea.setAttribute("ondragstart", "onDragStartMemo(event, this)");
+	archiveArea.setAttribute("ontransitionend", "onCloudBoxTransitionEnd(this)");
+	archiveArea.setAttribute("ondragend", "onDragEndMemo(event, this)");
+	archiveArea.setAttribute("ondragstart", "onDragStartMemo(event, this)");
+	
+	hideCloudBoxButton = document.getElementsByClassName("hideCloudBoxButton");
+	for ( i=0; i<hideCloudBoxButton.length; i++ ) {
+		hideCloudBoxButton[i].setAttribute("onclick", "hideCloudBox(this)");
+	}
 	
 	dummyButton = document.getElementById("dummyButton");
 	numberDummyButton = document.getElementById("numberDummyButton");
-	deleteAllButton = document.getElementById("deleteAllButton");
+	deleteAllItemButton = document.getElementById("deleteAllItemButton");
+	deleteAllMemoButton = document.getElementById("deleteAllMemoButton");
 	testFunctionButton = document.getElementById("testFunctionButton");
 	toggleMemoButton = document.getElementById("toggleMemoButton");
 	addMemoButton = document.getElementById("addMemoButton");
+	newDayButton = document.getElementById("newDayButton");
 	
 	insertButton.onclick = onInsertButtonClick;
-	hideInputBoxButton.onclick = hideInputBox;
+	
+	deleteAllItemButton.onclick = deleteAllItem;
+	deleteAllMemoButton.onclick = deleteAllMemo;
+	toggleMemoButton.onclick = toggleMemo;
+	
 	dummyButton.onclick = addDummyList;
 	numberDummyButton.onclick = addNumberDummyList;
-	deleteAllButton.onclick = deleteAll;
 	testFunctionButton.onclick = onTestButtonClick;
-	toggleMemoButton.onclick = toggleMemo;
-	addMemoButton.onclick = addMemo;
+	newDayButton.onclick = onNewDayButtonClick;
 
+	addMemoButton.onclick = addMemo;
+	loadMemo();
 	var els = document.getElementsByClassName('resizable');
 	for(var i=0, len=els.length; i<len; ++i){
 	    els[i].onmouseover = resizableStart;
 	}
 	
-	MEMO_ID = storage.getItem(MEMO_ID_STORAGE);
-	callList();
-	showList();
+	loadList();
+	showList( todayArea, todayList.itemArray );
 	printSystemMessage();
+	setTableTitle();
 }
-
-var memoPositionOffset = 0;
-function memoObj () {
-	var obj = this;
-	this.div = document.createElement("DIV");
-	this.div.setAttribute("class", "memoBox resizable");
-	this.div.setAttribute("draggable", "true");
-	memoLayer.appendChild(this.div);
-	
-	this.isActivated=false;
-	this.id = "memoID="+(MEMO_ID++);
-	storage.setItem(MEMO_ID_STORAGE, MEMO_ID)
-	this.title="";
-	this.color= this.div.style.backgroundColor ="lightblue";
-	this.width= this.div.style.width = "200px";
-	this.height = this.div.style.height = "200px";
-	this.top = this.div.style.top = (100+memoPositionOffset++*15)+"px";
-	this.left = this.div.style.left = (50+memoPositionOffset*15)+"px";
-	this.contents = "";
-	this.div.ondragend = onDragEndMemo;
-	this.div.ondragstart = onDragStartMemo;
-	this.div.innerHTML = "<div class='memoTitle'>" +
-			"<div class='memoCloseButton transparentButton'>X</div>" +
-			"<div class='memoColorButton transparentButton'> <input type='color' class='memoColor' oninput='pickColor(this)'></div>" +
-			"	</div>	<div class='memoContents' contenteditable='true' ></div>";
-	
-	this.div.style.display = "none";
-	this.closeButton = this.div.children[0].children[0];
-	this.colorButton = this.div.children[0].children[1];
-	this.contentArea = this.div.children[1];
-	this.closeButton.onclick = function () {
-		obj.div.style.display = "none";
-		var i=0;
-		for ( i=0, len=memoArray.length; i<len; i++ )
-			if ( memoArray[i] === obj ) break;
-		delete memoArray[i];
-		clearNullFromArray(memoArray);
-	};
-	
-	this.makeVisible = function () {
-		if ( this.isActivated ) {
-			this.isActivated = false;
-			this.div.style.display = "none";
-		}		
-		else {
-			this.isActivated = true;
-			this.div.style.display = "block";
-		}
+var isArchiveActivated = false;
+function onArchiveButtonClick () {
+	if ( isArchiveActivated ) {
+		isArchiveActivated = false;
+		archiveArea.style.display = "none";
+		printSystemMessage("Archive Off");
 	}
-	this.saveMemo = function () {
-		this.width = this.div.style.width;
-		this.height = this.div.style.height;
-		this.left = this.div.style.left;
-		this.top = this.div.style.top;
-		this.color = this.div.style.backgroundColor;
-		this.contents = this.contentArea.innerHTML;
-	}
-	return this;
-}
-
-
-
-function clearNullFromArray ( arr ) {
-	counter = 0;
-	for ( var i=0, len=arr.length; i<len; i++ )
-		if ( arr[i] === null || arr[i] === undefined )
-			counter++;
-	arr.sort();
-	for ( var i=0; i<counter; i++ )
-		arr.pop();
-}
-
-function hideInputBox () {
-	if ( hideInputBoxButton.innerHTML === "&lt;" ) {
-		inputBox.style.width = "45px"
-		hideInputBoxButton.innerHTML = ">";
-	}
-	else
-	{
-		inputArea.style.display = "initial";
-		insertButton.style.display = "initial";
-		inputBox.style.width = "400px";
-		hideInputBoxButton.innerHTML = "<";
-	}
-}
-function addMemo () {
-	obj = new memoObj();
-	memoArray.push(obj);
-	obj.makeVisible();
-}
-function closeAllMemo () {
-	
-}
-function callMemo () {
-	memoArray = JSON.parse(storage.getItem(MEMO_STORAGE));
-	if ( memoArray == null )
-		return;
 	else {
-		for ( i=0; i<memoArray.length; i++ ) {
-			memoBox.style.width = memoArray[i].width;
-			memoBox.style.height = memoArray[i].height;
-			memoBox.style.left	 = memoArray[i].left;
-			memoBox.style.top = memoArray[i].top;
-			memoBox.style.backgroundColor = memoArray[i].color;
-			memoBox.style.color = decideFontColor(memoArray[i].color);
-			memoContents.innerHTML = memoArray[i].contents;
-		}
+		isArchiveActivated = true;
+		printSystemMessage("Archive On");
+		loadArchive();
+		archiveArea.style.display = "block";
 	}
-	if ( !memoArray.isActivated )
-		;
+}
+function loadArchive ( ) {
+	archiveTitle.innerHTML = "Archive";
+	if ( !storage.hasOwnProperty(ARCHIVE) ) {
+		console.log("loadArchive(): no archive");
+		printSystemMessage("No archive!");
+		return false;
+	}
 	else
-		memoArray[i].makeVisible();
+		archiveData = JSON.parse(storage.getItem(ARCHIVE));
+	if ( archiveData.length === 0 ) {
+		printSystemMessage("No data in archive!");
+	}
+	var contents="";
+	for ( var i=0, len=archiveData.length; i<len; i++ ) {
+		contents += "<tr><td class='tableList' onclick='loadArchiveContents("+i+");archiveTitle.innerHTML=\""+archiveData[i].date+"\";'><strong>"+ archiveData[i].date +
+				"</strong><div class='deleteArchiveButton transparentButton' onclick='deleteArchive(event, "+i+");loadArchive();'><strong>X</strong></div></td></tr>";
+	}
+	archiveTable.innerHTML =contents;
+	return true;
 }
-function saveMemo ( memoObj ) {
-	memoObj.width = memoBox.style.width;
-	memoObj.height = memoBox.style.height;
-	memoObj.left = memoBox.style.left;
-	memoObj.top = memoBox.style.top;
-	memoObj.color = memoBox.style.backgroundColor;
-	memoObj.contents = memoContents.innerHTML;
-	//storage.setItem(MEMO_STORAGE, JSON.stringify(memoObj));
+function loadArchiveContents ( index ) {
+	var contents = "";
+	for ( var i=0, len=archiveData[index].itemArray.length; i<len; i++ ) {
+		if ( archiveData[index].itemArray[i] === null || archiveData[index].itemArray[i] === undefined )
+			continue;
+		if ( archiveData[index].itemArray[i].isChild )
+			continue;
+		contents += "<tr><td class='tableList' onclick='loadArchive()'>"+ archiveData[index].itemArray[i].contents +"</td><tr>";
+		var childIndices = archiveData[index].itemArray[i].children
+		if ( childIndices.length !== 0) {
+			for ( var j=0, len=childIndices.length; j<len; j++ ) 
+				contents += "<tr><td class='childItem'>"+ archiveData[index].itemArray[childIndices[j]].contents+"</td><tr>";
+		}
+		
+	}
+	archiveTable.innerHTML = contents;
 }
-function toggleMemo () {
-	clearNullFromArray(memoArray);
-	for ( var i=0; i<memoArray.length; i++ )
-		memoArray[i].makeVisible();
+function deleteArchive ( ev, index ) {
+	ev.stopPropagation();
+	printSystemMessage("Discarded: "+archiveData[index].date);
+	archiveData.splice(index, 1);
+	storage.setItem(ARCHIVE, JSON.stringify(archiveData));
 }
 
-var offsetX;
-var offsetY;
-function onDragStartMemo (ev ) {
-	offsetX = this.offsetLeft - ev.clientX;
-	offsetY = this.offsetTop - ev.clientY;
+function setTableTitle () {
+	var lastDate = todayList.date;
+	var today = new Date().toISOString().slice(0, 10);
+	if ( lastDate === today ) 
+		;// nothing happen
+	else
+		onNewDayButtonClick();// Ready to make new list
+		
+	todayTitle.innerHTML = lastDate; 
+	newDayTitle.innerHTML = today;
 }
-function onDragEndMemo ( ev) {
-	this.style.left = (offsetX+ev.clientX)+"px";
-	this.style.top = (offsetY+ev.clientY)+"px";
-	//saveMemo( memoObj );
+var isShiftMode = false;
+
+function onNewDayButtonClick () {
+	if ( !isShiftMode ) {
+		printSystemMessage("Push [Shift] button to move the list");
+		newDayArea.style.display = "initial";
+		isShiftMode = true;
+		makeNewDayList();
+	}
+	else {
+		newDayArea.style.display = "none";
+		isShiftMode = false;
+	}
+}
+function makeNewDayList () {
+	newDayList = new oneDayList();
+	for ( var i=0, len=todayList.itemArray.length; i<len; i++ ) {
+		if ( todayList.itemArray[i].completeness == 2)
+			;
+		else
+			newDayList.itemArray.push(todayList.itemArray[i]);
+	}
+	if ( isShiftMode ) {
+		showList( todayArea, todayList.itemArray );
+		showList( newDayArea, newDayList.itemArray );
+	}
+}
+function shiftOneDay() {
+	if (!keepInArchive(todayList))
+		printSystemMessage("Failed to archiving");
+	else 
+		printSystemMessage("Last data is archived");
+	printSystemMessage("Moved to next list");
+	todayList = newDayList;
+	storage.setItem(TODAY_ITEM_STORAGE, JSON.stringify(todayList));
+	showList(todayArea, todayList.itemArray);
+	if ( isShiftMode )
+		onNewDayButtonClick();
+	setTableTitle();
+	loadArchive();
+	
+}
+function deleteAll () {
+	deleteAllMemo();
+}
+function hideControlBox () {
+	itemControlBox.style.opacity=0;
+	boxCloseButton.style.display = "none";
+	if ( boxCloseButton.target ) {
+		boxCloseButton.target.style.backgroundColor = 'initial';
+	}
+	boxCloseButton.target = "";
 }
 
-function onTestButtonClick() {
+function onCloudBoxTransitionEnd( obj )  { 
+	var len = obj.children.length;
+	if ( obj.children[len-1].innerHTML === '&gt;' )
+		for ( var i=0; i<len-1; i++)
+			obj.children[i].style.display='none'; 
+	else
+		for ( var i=0; i<len-1; i++)
+			obj.children[i].style.display='initial';
+	
+	if ( obj.style.opacity == '0')
+		obj.style.display = "none";
+}
+function hideCloudBox ( obj ) {
+	if ( obj.innerHTML === "&lt;" ) {
+		obj.parentNode.style.width = "45px"
+		obj.innerHTML = ">";
+	}
+	else {
+		obj.parentNode.style.width = "400px";
+		obj.innerHTML = "<";
+	}
+}
+
+function onTestButtonClick () {
 //	Alert.render("ANHELLO WORLD");
 }
 
@@ -207,156 +282,17 @@ function addDummyList ( ) {
 	addItem("Important meeting");
 	addItem("Watch TV show");
 	printSystemMessage("Dummies added.");
-	showList();
+	showList( todayArea, todayList.itemArray );
 }
 
-var counter;
+var dummyCounter;
 function addNumberDummyList ( ) {	
 	printSystemMessage("NumberDummies added.");
-	if ( counter == undefined)
-		counter = 1;
+	if ( dummyCounter == undefined)
+		dummyCounter  = 1;
 	for ( c=0 ; c<5 ; c++ )
-		addItem(counter++);
-	showList();
-}
-
-function deleteAll () {
-	itemArray = [];
-	storage.removeItem(TODO_LIST_STORAGE);
-	showList();
-	printSystemMessage("Delete all items");
-}
-
-function onInsertButtonClick() {
-	addItem(inputArea.value);
-	inputArea.value="";
-	showList();
-}
-
-function callList() {
-	itemArray = JSON.parse(storage.getItem(TODO_LIST_STORAGE));
-	if ( itemArray == null )
-		itemArray = [];
-	systemMessageQueue = JSON.parse(storage.getItem(SYSTEM_MESSAGE_STORAGE));
-	if ( systemMessageQueue == null )
-		systemMessageQueue = [];
-}
-
-function showList () {
-	todoList = "";
-	for (i in itemArray) {
-		if (itemArray[i] != null)
-			todoList += "<tr><td width=400 class='tableList' id=listIndex"+i+" draggable=true ondragstart=onDragStart(event) ondrop=drop(event) ondragover=allowDrop(event)" +
-					 " ondragenter=onDragenterList(event) ondragleave=onDragleaveList(event) ondblclick=modifyItem(this)>" +itemArray[i] + 
-				"</td><td><button type=\"button\" onClick=\"deleteItem("+i+")\">Delete</button></td></tr>";
-		else 
-			;
-	}
-	if ( todoList == "" )
-		todoList = "<tr><td width=400 style='color:red'><strong>Nothing to do</td></strong></tr>";
-	document.getElementById("todoList").innerHTML = todoList;
-}
-
-function allowDrop(ev) {
-	data = ev.dataTransfer.getData("text");
-	if ( ev.target.id.search("listIndex") === -1 ) 
-		if ( data.search("listIndex") != -1) return;
-	ev.preventDefault();
-}
-function onDragStart(ev) {
-    ev.dataTransfer.setData("text", ev.target.id);
-}
-
-// Also index in itemArray is exchanged
-function drop(ev) {
-    ev.preventDefault();
-    data = ev.dataTransfer.getData("text");
-    if ( data.search("listIndex") !== -1 ) {
-    	if ( ev.target.id.search("listIndex") !== -1 ) {
-		    index = data.slice(9);
-		    thisIndex = ev.target.id.slice(9);
-		    temp = itemArray[index];
-		    itemArray[index] = itemArray[thisIndex];
-		    itemArray[thisIndex] = temp;
-		    storage.setItem(TODO_LIST_STORAGE, JSON.stringify(itemArray));
-		    showList();
-    	}
-    }
-    else {
-    }
-}
-function modifyItem ( obj ) {
-	obj.contentEditable=true;	
-	obj.onblur = modify;
-}
-function modify () {
-	this.contentEditable=false;
-	index = this.id.slice(9);	
-	if ( this.innerHTML === undefined )
-		return;
-	else
-		if ( changeItem(index, this.innerHTML) )
-			printSystemMessage("Item changed: >" + this.innerHTML);
-	
-	showList();
-}
-function onDragenterList ( ev ) {
-	if ( ev.target.id == ev.dataTransfer.getData("text") )
-		;
-	else ev.target.style.background = "pink";
-}
-function onDragleaveList ( ev ) {
-	if ( ev.target.id == ev.dataTransfer.getData("text") )
-		;
-	else ev.target.style.background = "white";
-}
-
-// item:String
-function addItem ( item ) {
-	// date, deadlines.
-	if ( item == "" )
-	{
-		alert("No input(addItem)");
-		printSystemMessage("No input");
-		return -1;
-	}
-	itemArray.push(item);
-	printSystemMessage("Item added:" + item);
-	storage.setItem(TODO_LIST_STORAGE, JSON.stringify(itemArray));
-}
-
-function changeItem ( index, item ) {
-	if ( item === "" ) {
-		alert("No input(addItem)");
-		return false;
-	}
-	itemArray[index] = item;
-	storage.setItem(TODO_LIST_STORAGE, JSON.stringify(itemArray));
-	return true;
-}
-
-// Special effect required (crossing-out)
-// index:Number
-function deleteItem ( index ) {
-	printSystemMessage("Item Deleted: "+ itemArray[index]);
-	itemArray.splice(index, 1);
-	storage.setItem(TODO_LIST_STORAGE, JSON.stringify(itemArray));	
-	showList();
-}
-
-function pickColor ( obj ) {
-	printSystemMessage(obj.value);
-	obj.parentNode.parentNode.parentNode.style.backgroundColor = obj.value;
-	obj.parentNode.parentNode.parentNode.style.color = decideFontColor(obj.parentNode.parentNode.parentNode.style.backgroundColor);
-}
-function decideFontColor(colorValue){
-    colorValue = colorValue.replace('rgb(','');
-    colorValue = colorValue.replace(')','');
-    arr = colorValue.split(", ");
-    if ( Number(arr[0])+Number(arr[1])+Number(arr[2]) < 500)
-    	return "white";
-    else
-    	return "black";
+		addItem(dummyCounter ++);
+	showList( todayArea, todayList.itemArray );
 }
 
 // message:String
@@ -367,6 +303,10 @@ function printSystemMessage ( message ) {
 		systemMessageQueue.shift();
 	
 	mqlength = systemMessageQueue.length;
+	if ( mqlength === 0) {
+		systemMessageQueue.push("No Message");
+		mqlength = 1;
+	}
 	systemMessage = "<strong>" + systemMessageQueue[mqlength-1] + "</strong>";
 	for ( i=0 ; i<mqlength-1 ; i++ ) {
 		systemMessage += "<br />" + systemMessageQueue[mqlength-2-i];
@@ -374,42 +314,3 @@ function printSystemMessage ( message ) {
 	document.getElementById("systemMessage").innerHTML = systemMessage;
 	storage.setItem(SYSTEM_MESSAGE_STORAGE, JSON.stringify(systemMessageQueue));
 }
-
-function resizableStart(e){
-    this.originalW = this.clientWidth;
-    this.originalH = this.clientHeight;
-    this.onmousemove = resizableCheck;
-    this.onmouseup = this.onmouseout = resizableEnd;
-}
-function resizableCheck(e){
-    if(this.clientWidth !== this.originalW || this.clientHeight !== this.originalH) {
-        this.originalX = e.clientX;
-        this.originalY = e.clientY;
-        this.onmousemove = resizableMove;
-    }
-}
-function resizableMove(e){
-    var newW = this.originalW + e.clientX - this.originalX,
-        newH = this.originalH + e.clientY - this.originalY;
-    if(newW < this.originalW){
-        this.style.width = newW + 'px';
-    }
-    if(newH < this.originalH){
-        this.style.height = newH + 'px';
-    }
-}
-function resizableEnd(){
-    this.onmousemove = this.onmouseout = this.onmouseup = null;
-}
-
-/* Optional requirements
- *  Analog graphic effects
- *  Experiential gestures
- *  Anything i suggest of?
-*/
-
-/* Submission materials
- * 	Short report highlighting system UI design
- * 	Zipped source file, excutable at Chrome
- * 	Name it informatively
- */

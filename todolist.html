@@ -1,45 +1,92 @@
+<!-- developer options -->
+	<button style='display:none' type=button id=testFunctionButton>testFunc</button>
+	<button style='display:none' type=button id=deleteAllMemoButton>DeleteAllMemo</button>
+	<button style='display:none' type=button id=numberDummyButton>Put numbers</button>
+<!--  -->
+
 <!DOCTYPE html> 
 <HTML>
 <head>
 <script type="text/javascript" src="controller.js" ></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script type="text/javascript" src="memo.js"></script>
+<script type="text/javascript" src="item.js"></script>
 <link rel="stylesheet" type="text/css" href="style.css" />
+<link rel="stylesheet" type="text/css" href="memo.css" />
 </head>
 <BODY ondragover="allowDrop(event)">
 
 <div id="memoLayer">
-<div class="resizable" id="memoBox" draggable=true style="display:none;" ondragend="onDragEndMemo(event, this)" ondragstart="onDragStartMemo(event, this)">
-	
-</div>
 </div>
 
+<div id="itemLayer">
+</div>
+
+<div id="inputBox" class="cloudBox" draggable="true">
+	<input type="text" class="inputArea" id="inputArea" onkeypress="if(event.keyCode==13) {onInsertButtonClick(); }">
+	<button type="button" id="insertButton" >Insert</button>
+	<button type="button" class="hideCloudBoxButton"><</button>
+</div>
+<div id="menuBox" class="cloudBox" draggable="true">
+	<button type=button id=addMemoButton>Memo+</button>
+	<button type=button id=toggleMemoButton>Memo on/off</button>
+	<button type=button id=archiveButton>Archive on/off</button>
+	<button type="button" class="hideCloudBoxButton"><</button>
+</div>
+<div id="itemControlBox" class="cloudBox" draggable="true">
+	<div>
+		<input type="text" class="inputArea" id="modifyInputArea">
+		<button type="button" id="modifyButton" >Modify</button>
+	</div>
+	<div>
+		<input type="date" class="inputArea" id="dateInputArea" max="3000-12-31">
+		<button type="button" id="setDeadlineButton">Set</button>
+	</div>
+	<div>
+		<button type='button' id='addChildButton'>Add child</button>
+		<button type='button' id="deleteButton">Delete</button>
+		<button type='button' id='deleteAllItemButton'>Delete All Items</button>
+	</div>
+</div>
+<div id="closeButton"></div>
 <div>
-<table border=2 style="margin:auto">
+<table style="margin:auto">
 	<tr><td width=500> System Message </td></tr>
 	<tr height=100 ><td id="systemMessage"></td></tr>
-	<tr>
-		<td><button type=button id=dummyButton>Put dummys</button>  <button type=button id=numberDummyButton>Put numbers</button></td>
-	</tr>	
 	<tr><td>
-		<button type=button id=deleteAllButton>DeleteAll</button>
-		<button type=button id=toggleMemoButton>Memo on/off</button>
-		<button type=button id=addMemoButton>Add memo</button>
-		<button type=button id=testFunctionButton>testFunc</button>
+		<button type=button id=dummyButton>Load dummy items</button>
+	</td></tr>	
+	<tr><td>
+		<button type=button id=newDayButton>New Day</button>
+		<button type=button id=shiftButton>Shift</button>
 	</td></tr>
 </table>
 </div>
 <br />
-<div id="inputBox">
-	<input type="text" id="inputArea" onkeypress="if(event.keyCode==13) {onInsertButtonClick(); }">
-	<button type="button" id="insertButton" >Insert</button>
-	<button type="button" id="hideInputBoxButton"><</button>
+<br />
+
+
+<div id="listLayer">
+	<div id="todayArea" class="tableArea">
+		<div id="todayTitle" class="tableTitle">Today</div>
+		<table id="todayListTable" class="tableBody">
+		</table>
+	</div>
+	<div id="newDayArea" class="tableArea">
+		<div id="newDayTitle" class="tableTitle"> New Day</div>
+		<table id="newDayTable" class="tableBody" >
+		</table>
+	</div>
 </div>
-<br />
-<br />
-
-<table border=10 id="todoList" style="margin:auto">
-</table>
-
+<div id="deadlineArea" class="tableArea" draggable='true'>
+	<div id="deadlineTitle" class="tableTitle"> Deadline</div>
+	<table id="deadlineTable" class="tableBody">
+	</table>
+</div>
+<div id="archiveArea" class="tableArea" draggable='true'>
+	<div id="archiveTitle" class="tableTitle"> Archive on/off</div>
+	<table id="archiveTable" class="tableBody">
+	</table>
+</div>
 </BODY>
 <script type="text/javascript">init();</script>
 </HTML>

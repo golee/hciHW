@@ -5,16 +5,28 @@
 	font-size: 18px;
 	border-radius: 5px;
 }
-
-.opaque{
-	opacity: 1;
+body {
+	background-color: lightblue;
+}
+div {
+	vertical-align: top;
+}
+td {
+	border-top: 3px solid black;
+	border-right: 0px;
+	border-left: 0px;
+	text-align: center;
+	vertical-align: center;	
+}
+td > * {
+	
+}
+table {
+	border: 2px solid black;
+	border-top:0px;
 }
 
-table * {
-	text-align: center	;
-}
-
-input[type="text"] {
+input[type="text"], input[type="date"] {
 	padding: 10px;
 	text-align:initial;
 	font-size: 20px;
@@ -27,91 +39,180 @@ input[type="color"] {
 	height: inherit;
 }
 button {
-	background-color:#c0c0c0;
+	background-color:lightgray;
+	border-radius: 10px;
+	border: 2px outset;
 	padding: 10px;
+	font-size:14px;
+	height: 50px;
+}
+button:active {
+	background-color:gray;
+}
+strong {
+	font-size:1.5em;
 }
 
 .transparentButton {
 	opacity: 0.5;
+	transition: opacity .2s ease-out;
 }
 .transparentButton:hover {
 	opacity: 1;
+	color: crimson;
 	font-weight: bold;
 }
 
-.tableList {
-	
+#listLayer > * {
+	width : 20%;
+	display: inline-block;
+	vertical-align: top;
 }
-.tableList:acitve {
-	background-color: darkgray;
+#listLayer {
+	text-align: center;
+}
+.tableArea {
+	border: 3px solid;
+	padding: 5px;
+	min-width: 300px;
+}
+#todayArea {
+}
+#newDayArea {
+	border-style: dashed;
+	display: none;
+}
+#deadlineArea {
+	position: absolute;
+	display: block;
+	left: 70%;
+	top: 300px;
+	box-shadow: 0px 0px 40px 10px gray;
+	transition: width .2s linear, left .5s, top .5s;
+	background-color: lightblue;
+}
+#archiveArea {
+	display: none;
+	position: absolute;
+	left: 20px;
+	top: 300px;
+	border: 3px solid;
+	padding: 4px;
+	box-shadow: 0px 0px 40px 10px gray;
+	transition: width .2s linear, left .5s, top .5s;
+	background-color: lightblue;
+}
+.deleteArchiveButton {
+	position: relative;
+	float: right;
+	width: 10%;
+}
+
+.tableTitle {
+	font-size: 1.5em;
+	text-align: left;
+	font-weight: bold;
+}
+.tableBody {
+}
+.tableList {
+	width: 400px;
+	height: 60px;
+	transition: background-color .2s ease-out;
 }
 .tableList:hover {
-	background-color: lightblue;
+	background-color: gray !important;
+	opacity: 0.9;
 }
 .tableList:focus {
 	background-color: lightgreen;	
 }
+.childItem {
+	border-top: 4px dashed darkgray;
+	font-size: 2em;
+	height: 30px;
+	float:bottom;
+}
+.completenessIcon {
+	position: relative;
+	float:left;
+	left: 10%;
+	width: 2.5em;
+	height: 2.5em;
+	border-radius: 50%;
+	border: 3px;
+	border-style: dotted;
 
-.memoBox{
-	box-shadow: 0px 2px 2px 1px gray;
-	position: fixed;
-	background-color: lightpink;
-	top: 50px;
-	left: 50px;
-	min-height: 200px;
-	min-width: 200px;
-	resize: both;
-	overflow:auto;
 }
-.memoTitle{
-	background-color:rgba(100,100,100,0.3);
-	position: fixed;
-	height: 2em;
-	width: inherit;
+.completenessIcon:hover {
+	animation: myRotation 5s infinite;
+	box-shadow: 0px 0px 3px 3px white;
 }
-.memoColorButton{
+.completenessIcon.compelete {
+	
+}
+
+@keyframes myRotation {
+    from {transform: rotate(0deg);}
+    to {transform: rotate(360deg);}
+}
+
+.inputArea {
+	width: 70%;
+}
+#insertButton {
+	position:absolute;
+	margin:auto;
+	left:71%;
+}
+.cloudBox {
+	vertical-align: center;
+	position: fixed;	
+	background-color: white;
+	border: 3px solid lightgray;
+	box-shadow: 0px 1.5px 40px 1px gray;
+	padding: 5px;
+	height: 65px;
+	width: 400px;
+	overflow: hidden;
+	transition: width .2s linear, left .5s, top .5s;
+	z-Index: 1;
+}
+
+#itemControlBox 
+{
 	position: absolute;
-	height: inherit;
-	top: 0px;
-	right: 10%;
-}
-.memoCloseButton{
-	text-align: center;
-	position: absolute;
-	height: inherit;
-	line-height: 2em;
-	width: 10%;
-	right: 0px;
-	top: 0px;
-}
-.memoContents{
-	text-align: left;
-	text-indent: 1em;
-	position: absolute;
-	width: 100%;
+	display: none;
+	opacity: 0;
+	transition: width .1s linear, left .5s, top .5s, opacity .2s ease-out;
+	
 	height: auto;
-	top: 2em;
-	bottom: 10px;
-	overflow: vertical;	
+	overflow: visible;
+	z-index: 900 !important;
+}
+#closeButton {
+	display: none;
+	position: fixed;
+	top:0px;
+	left:0px;
+	height: 100%;
+	width: 100%;
+	z-index: 800;
 }
 
 #inputBox {
-	position: fixed;
 	top:8px;
 	left:8px;
-	background-color: lightblue;
-	padding: 5px;
-	height: 60px;
-	width: 400px;
-	overflow: hidden;
-	transition: width .1s linear;
 }
-#insertButton {
-	width: 20%;
+#menuBox {
+	top: 100px;
+	left: 8px;
 }
-#inputArea {
-	width: 65%;
+.hideCloudBoxButton {
+	position:absolute;
+	right: 10px;
+	z-index: 1;
 }
-#hideInputBoxButton {
-	position:relative;
+#deleteAllItemButton {
+	float: right;
 }
