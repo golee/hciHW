@@ -176,6 +176,7 @@ function decideFontColor(colorValue){
     else
     	return "black";
 }
+// brightness 0~765
 function generateRandomColor( brightness ) {
 	var r,g,b;
 	do {

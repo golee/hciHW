@@ -72,6 +72,8 @@ function init () {
 	archiveTitle = document.getElementById("archiveTitle");
 	archiveButton = document.getElementById("archiveButton");
 	archiveButton.onclick = onArchiveButtonClick;
+	deadlineButton = document.getElementById("deadlineButton");
+	deadlineButton.onclick = onDeadlineButtonClick;
 	deadlineArea = document.getElementById("deadlineArea");
 	
 	cloudBox = document.getElementsByClassName("cloudBox");
@@ -136,6 +138,21 @@ function onArchiveButtonClick () {
 		printSystemMessage("Archive On");
 		loadArchive();
 		archiveArea.style.display = "block";
+	}
+}
+
+var isDeadlineActivated = false;
+function onDeadlineButtonClick () {
+	if ( isDeadlineActivated ) {
+		isDeadlineActivated = false;
+		deadlineArea.style.display = "none";
+		printSystemMessage("Deadline Off");
+	}
+	else {
+		isDeadlineActivated = true;
+		printSystemMessage("Deadline On");
+		deadlineArea.style.display = "block";
+		//showlist?
 	}
 }
 function loadArchive ( ) {

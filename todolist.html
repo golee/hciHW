@@ -29,7 +29,6 @@
 <div id="menuBox" class="cloudBox" draggable="true">
 	<button type=button id=addMemoButton>Memo+</button>
 	<button type=button id=toggleMemoButton>Memo on/off</button>
-	<button type=button id=archiveButton>Archive on/off</button>
 	<button type="button" class="hideCloudBoxButton"><</button>
 </div>
 <div id="itemControlBox" class="cloudBox" draggable="true">
@@ -53,11 +52,13 @@
 	<tr><td width=500> System Message </td></tr>
 	<tr height=100 ><td id="systemMessage"></td></tr>
 	<tr><td>
-		<button type=button id=dummyButton>Load dummy items</button>
+		<button type='button' id='dummyButton' class='blackButton'>Load dummy items</button>
+		<button type='button' id='archiveButton' class='blackButton'>Archive on/off</button>
+		<button type='button' id='deadlineButton' class='blackButton'>Deadline on/off</button>
 	</td></tr>	
 	<tr><td>
-		<button type=button id=newDayButton>New Day</button>
-		<button type=button id=shiftButton>Shift</button>
+		<button type='button' id='newDayButton' class='blackButton'>New Day</button>
+		<button type='button' id='shiftButton' class='blackButton'>Shift</button>
 	</td></tr>
 </table>
 </div>

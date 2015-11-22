@@ -20,7 +20,7 @@ function item ( text ) {
 	this.deadline;
 	this.children = []; // Array of index number
 	this.isChild = false;
-	this.parent;
+	this.parent = -1;
 	return this;
 }
 
@@ -39,7 +39,7 @@ function keepInArchive ( itemList ) {
 		for ( var i=0, len=readyList.itemArray.length; i<len; i++ ) {
 			if ( readyList.itemArray[i].deadline !== undefined ) {
 				deleteTargets.push(i);
-				if ( readyList.itemArray[i].children.length !== 0 )
+				if ( findChildren(i) !== 0 )
 					deleteTargets = deleteTargets.concat(readyList.itemArray[i].children);
 			}
 		}
@@ -79,7 +79,7 @@ function showList ( tableArea, listArray ) {
 		if (listArray[i] != null) {
 			if ( listArray[i].isChild )
 				continue;
-			clen=listArray[i].children.length;
+			clen = findChildren(i);
 			if ( listArray[i].deadline !== undefined ) {
 				 deadlineIndices.push(i);
 			 }
@@ -109,7 +109,7 @@ function showList ( tableArea, listArray ) {
 	    return parseInt(listArray[a].deadline.replace(/-/g, '')) - parseInt(listArray[b].deadline.replace(/-/g, ''));
 	});
 	for (var i=0, len=deadlineIndices.length; i<len; i++ ) {
-		clen = listArray[deadlineIndices[i]].children.length;
+		clen = findChildren(deadlineIndices[i]);
 		deadlineContents += "<tr ><td  rowspan='"+(clen+1)+"'>" + listArray[deadlineIndices[i]].deadline+"</td><td class='tableList' id='listIndex"+deadlineIndices[i]+"' ondrop='drop(event, this)' onclick='callControlCloud("+deadlineIndices[i]+", this)'>" +
 			"<div class='completenessIcon' onclick='progressAhead("+deadlineIndices[i]+", this)' draggable='true' ondrop='link()'></div><div>"+listArray[deadlineIndices[i]].contents+"</div></td>";
 		if ( clen !==0 ) {
@@ -219,13 +219,19 @@ function drop ( ev, targetObj ) {
     data = ev.dataTransfer.getData("text");
     if ( data.search("listIndex") !== -1 ) {
     	if ( targetObj.id.search("listIndex") !== -1 ) {
-		    index = data.slice(9);
-		    thisIndex = targetObj.id.slice(9);
+		    index = parseInt(data.slice(9));
+		    thisIndex = parseInt(targetObj.id.slice(9));
 		    if ( thisIndex==999 || todayList.itemArray[thisIndex].deadline !== undefined ) {
 		    	todayList.itemArray[index].deadline = new Date().toISOString().slice(0,10);
 		    	showList( todayArea, todayList.itemArray );
 		    }
 		    else {
+		    	for ( var i=0, len=todayList.itemArray.length; i<len; i++ ) {
+		    		if ( todayList.itemArray[i].parent === index )
+		    			todayList.itemArray[i].parent = thisIndex;
+		    		else if ( todayList.itemArray[i].parent === thisIndex )
+		    			todayList.itemArray[i].parent = index;
+		    	}
 			    temp = todayList.itemArray[index];
 			    todayList.itemArray[index] = todayList.itemArray[thisIndex];
 			    todayList.itemArray[thisIndex] = temp;
@@ -261,6 +267,7 @@ function callControlCloud ( index, obj ) {
 	}
 	obj.style.backgroundColor = 'darkgray';
 	itemControlBox.style.display="initial";
+	modifyInputArea.focus();
 	var rect = obj.getBoundingClientRect();
 	var left = rect.right+10+window.pageXOffset;
 	
@@ -290,9 +297,8 @@ function onAddChildButtonClick ( index ) {
 	var child = new item( "" );
 	child.isChild = true;
 	child.parent = index;
-	var childIndex = index+todayList.itemArray[index].children.length+1;
-	todayList.itemArray.splice(childIndex, 0, child);
-	todayList.itemArray[index].children.push(childIndex);
+	todayList.itemArray.push(child);
+	childIndex = todayList.itemArray.length-1;
 	storage.setItem(TODAY_ITEM_STORAGE, JSON.stringify(todayList));
 	showList(todayArea, todayList.itemArray);
 	hideControlBox();
@@ -322,25 +328,22 @@ function modifyItem ( index, text ) {
 	}
 }
 
+function findChildren ( index ) {
+	var childrenList = [];
+	for ( var i=0, len=todayList.itemArray.length; i<len; i++ )
+		if ( todayList.itemArray[i].parent === index )
+			childrenList.push(i);
+	todayList.itemArray[index].children = childrenList;
+	return childrenList.length;
+}
+
 function deleteItem ( index ) {
-	if ( todayList.itemArray[index].isChild ) {	// delete reference in parent item
-		var childArr = todayList.itemArray[todayList.itemArray[index].parent].children;
-		var len = childArr.length;
-		for ( var i=0; i<len; i++ ) {
-			if ( childArr[i] == index ) {
-				todayList.itemArray[todayList.itemArray[index].parent].children.splice(i, 1);
-				break;
-			}
-		}
-		todayList.itemArray.splice(index, 1);
-	}
-	else if ( todayList.itemArray[index].children.length !== 0) {
+	if ( findChildren(index) !== 0 ) {
 		var deleteTargets = todayList.itemArray[index].children.concat(index);
 		deleteTargets.sort();
 		len = deleteTargets.length;
-		for ( var i=len-1; i>=0; i-- ) {
+		for ( var i=len-1; i>=0; i-- ) 
 			todayList.itemArray.splice(deleteTargets[i], 1);
-		}
 	}
 	else
 		todayList.itemArray.splice(index, 1);
