@@ -1,10 +1,11 @@
 var TODAY_ITEM_STORAGE = "today";
 var ARCHIVE = "archive";
+var ITEM_ID1 = 0;
 var archiveData;
 
 function oneDayList () {
 	this.typeId = "oneDayList";
-	this.date = new Date().toISOString().slice(0,10);
+	this.date = getTimezoneISOString().slice(0,10);
 	this.itemArray = [];
 	return this;
 }
@@ -14,7 +15,7 @@ var newDayList = new oneDayList();
 var deadlineArray = [];
 
 function item ( text ) {
-	this.id = "";
+	this.id = "itemID="+(ITEM_ID++);
 	this.completeness = 0;
 	this.contents = text;
 	this.deadline;
@@ -66,7 +67,8 @@ function loadList() {
 }
 
 function showList ( tableArea, listArray ) {
-	tableArea.removeChild(tableArea.getElementsByTagName("TABLE")[0]);
+	if ( tableArea.getElementsByTagName("TABLE").length !== 0 )
+		tableArea.removeChild(tableArea.getElementsByTagName("TABLE")[0]);
 	var tableObject = document.createElement("TABLE");
 	tableObject.setAttribute("class", "tableBody");
 	emptyTable = "<tr><td id='listIndex999' class='tableList' ondragover='allowDrop(event, this)' ondrop='drop(event, this)'" +
@@ -177,7 +179,8 @@ function progressAhead( index, obj ) {	// only for today
 		makeNewDayList();break;
 	case 3: 
 		obj.style.backgroundColor="initial";
-		todayList.itemArray[index].completeness=0;break;
+		todayList.itemArray[index].completeness=0;
+		makeNewDayList();break;
 	default: todayList.itemArray[index].completeness = 0;	
 	}
 	storage.setItem(TODAY_ITEM_STORAGE, JSON.stringify(todayList));
@@ -205,8 +208,8 @@ function onDragOverList ( ev, targetObj ) {
 	allowDrop(ev);
 	if ( targetObj.id == ev.dataTransfer.getData("text") )
 		;
-	else if ( targetObj.tagName === "TD")
-		targetObj.style.background = "pink";
+	else if ( ev.dataTransfer.getData("text").slice(0,9) == "listIndex")
+		targetObj.style.background = "azure";
 }	
 function onDragStart ( ev ) {
     ev.dataTransfer.setData("text", ev.target.id);
@@ -222,7 +225,7 @@ function drop ( ev, targetObj ) {
 		    index = parseInt(data.slice(9));
 		    thisIndex = parseInt(targetObj.id.slice(9));
 		    if ( thisIndex==999 || todayList.itemArray[thisIndex].deadline !== undefined ) {
-		    	todayList.itemArray[index].deadline = new Date().toISOString().slice(0,10);
+		    	todayList.itemArray[index].deadline = getTimezoneISOString().slice(0,10);
 		    	showList( todayArea, todayList.itemArray );
 		    }
 		    else {
@@ -285,7 +288,7 @@ function callControlCloud ( index, obj ) {
 	//modifyInputArea.setAttribute("onblur", "onClickModifyButton("+index+")");
 	modifyButton.setAttribute("onclick", "onClickModifyButton("+index+")");
 	if ( todayList.itemArray[index].deadline === undefined ) {
-		dateInputArea.value = new Date().toISOString().slice(0, 10);
+		dateInputArea.value = getTimezoneISOString().slice(0, 10);
 	}else {
 		dateInputArea.value = todayList.itemArray[index].deadline;
 	}

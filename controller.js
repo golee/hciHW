@@ -60,7 +60,7 @@ function init () {
 	addChildButton = document.getElementById("addChildButton");
 	deleteButton = document.getElementById("deleteButton");
 	dateInputArea = document.getElementById("dateInputArea");
-	dateInputArea.min = new Date().toISOString().slice(0,10);
+	dateInputArea.min = getTimezoneISOString().slice(0,10);
 	setDeadlineButton = document.getElementById("setDeadlineButton");
 	boxCloseButton = document.getElementById("closeButton");
 	boxCloseButton.onclick = hideControlBox;
@@ -79,6 +79,7 @@ function init () {
 	cloudBox = document.getElementsByClassName("cloudBox");
 	for ( i=0; i<cloudBox.length; i++ ) {
 		cloudBox[i].setAttribute("ontransitionend", "onCloudBoxTransitionEnd(this)");
+		cloudBox[i].setAttribute("onclick", "this.style.zIndex = ++zIndexOffset");
 		cloudBox[i].setAttribute("ondragend", "onDragEndMemo(event, this)");
 		cloudBox[i].setAttribute("ondragstart", "onDragStartMemo(event, this)");
 	}
@@ -201,14 +202,18 @@ function deleteArchive ( ev, index ) {
 
 function setTableTitle () {
 	var lastDate = todayList.date;
-	var today = new Date().toISOString().slice(0, 10);
+	var today = getTimezoneISOString().slice(0, 10);
 	if ( lastDate === today ) 
 		;// nothing happen
-	else
+	else if ( todayList.itemArray.length === 0 ) {
+		todayList = new oneDayList();
+		todayTitle.innerHTML= today; 
+	}
+	else {
 		onNewDayButtonClick();// Ready to make new list
-		
-	todayTitle.innerHTML = lastDate; 
-	newDayTitle.innerHTML = today;
+		todayTitle.innerHTML = lastDate; 
+		newDayTitle.innerHTML = today;
+	}
 }
 var isShiftMode = false;
 
@@ -233,8 +238,8 @@ function makeNewDayList () {
 			newDayList.itemArray.push(todayList.itemArray[i]);
 	}
 	if ( isShiftMode ) {
-		showList( todayArea, todayList.itemArray );
 		showList( newDayArea, newDayList.itemArray );
+		showList( todayArea, todayList.itemArray );
 	}
 }
 function shiftOneDay() {
@@ -330,4 +335,8 @@ function printSystemMessage ( message ) {
 	}
 	document.getElementById("systemMessage").innerHTML = systemMessage;
 	storage.setItem(SYSTEM_MESSAGE_STORAGE, JSON.stringify(systemMessageQueue));
+}
+function getTimezoneISOString () {
+	var tzoffset = (new Date()).getTimezoneOffset() * 60000;
+	return (new Date(Date.now() - tzoffset)).toISOString();
 }

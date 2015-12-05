@@ -24,7 +24,8 @@ function memoObj () {
 	this.height = this.div.style.height = "200px";
 	this.top = this.div.style.top = (200+memoPositionOffset++*15)+"px";
 	this.left = this.div.style.left = (50+memoPositionOffset*15)+"px";
-	this.contents = "";
+	this.contents = "";	
+	this.div.setAttribute("onclick", "this.style.zIndex = ++zIndexOffset;");
 	this.div.setAttribute("ondragend", "onDragEndMemo(event, this);saveMemoById(this.id)");
 	this.div.setAttribute("ondragstart", "onDragStartMemo(event, this)");
 	this.div.innerHTML = "<div class='memoTitle'>" +
