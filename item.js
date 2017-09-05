@@ -1,6 +1,6 @@
 var TODAY_ITEM_STORAGE = "today";
 var ARCHIVE = "archive";
-var ITEM_ID1 = 0;
+var ITEM_ID = 0;
 var archiveData;
 
 function oneDayList () {
