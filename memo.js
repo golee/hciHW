@@ -140,12 +140,6 @@ function deleteAllMemo() {
 	printSystemMessage("Delete all memos");
 }
 
-var offsetX=0;
-var offsetY=0;
-function onDragStartMemo (ev, obj) {
-	offsetX = obj.offsetLeft - ev.screenX;
-	offsetY = obj.offsetTop - ev.screenY;
-}
 var zIndexOffset=0;
 function onDragEndMemo (ev, obj) {
 	var left = offsetX+ev.screenX;
