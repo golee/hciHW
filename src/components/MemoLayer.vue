@@ -20,7 +20,7 @@ export default {
 	},
 	methods: {
 		newMemo() {
-			this.memoList.push({ id:'floatingmemo'+memoCounter++ });
+			this.memoList.push({ id:'floatingmemo' + this.memoCounter++ });
 		}
 	}
 };
@@ -33,8 +33,9 @@ export default {
 	position: absolute;
 	left: 0;
 	top: 0;
-	width: 100%;
-	hegith: 100%;
+	width: 0;
+	height: 0;
+	overflow: visible;
 }
 
 </style>

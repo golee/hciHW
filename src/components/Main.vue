@@ -11,7 +11,7 @@
 		<button type="button" class="hideCloudBoxButton">{{ '<' }}</button>
 	</div>
 	<div id="menuBox" class="cloudBox" draggable="true">
-		<button type=button id=addMemoButton>Memo+</button>
+		<button type=button @click="newMemo">Memo+</button>
 		<button type=button id=toggleMemoButton>Memo on/off</button>
 		<button type="button" class="hideCloudBoxButton">{{ '>' }}</button>
 	</div>
@@ -87,6 +87,11 @@ export default {
 		return {
 			
 		};
+	},
+	methods: {
+		newMemo() {
+			this.$children[0].newMemo();
+		}
 	},
 };
 </script>
