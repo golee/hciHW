@@ -1,6 +1,7 @@
 <template>
 <div class="memo_layer">
-	<floating-memo v-for="memo in memoList" :key="memo.id"></floating-memo>
+	<floating-memo v-for="(memo, index) in memoList" :key="memo.id" :data="memo" :index="index"
+		@save="save" @close="remove"></floating-memo>
 </div>
 </template>
 
@@ -14,14 +15,31 @@ export default {
 	},
 	data() {
 		return {
-			memoCounter: 0,
 			memoList: [],
 		};
 	},
 	methods: {
 		newMemo() {
-			this.memoList.push({ id:'floatingmemo' + this.memoCounter++ });
+			this.memoList.push({ id:'floatingmemo' + new Date().getTime() });
+		},
+		save(index, data) {
+			if (index != null && data)
+				this.memoList.splice(index, 1, data);
+			localStorage.setItem('MEMO_STORAGE', JSON.stringify(this.memoList));
+		},
+		load() {
+			var memo = localStorage.getItem('MEMO_STORAGE');
+			if ( memo ) {
+				this.memoList = JSON.parse(memo);
+			}
+		},
+		remove(index) {
+			this.memoList.splice(index, 1);
+			this.save();
 		}
+	},	
+	mounted: function() {
+		this.load();
 	}
 };
 

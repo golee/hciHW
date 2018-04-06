@@ -2,6 +2,7 @@
 
 <div class="memo_box resizable" draggable 
 	@dragstart="onDragStart" @dragend="onDragEnd"
+	@mouseup="handleResize"
 	:style="boxStyle" :id="id">
 	<div class="memo_title">
 		<div class="btn_memo_close transparent"
@@ -18,13 +19,13 @@
 </template>
 
 <script>
+
 export default {
 	name: 'Memo',
-	props: ['data'],
+	props: ['data', 'index'],
 	data() {
-		return {
-			id: 'memobox',
-			index: 0,
+		var initVal = {
+			id: '',
 			zIndex: 0,
 			color: this.generateRandomColor(),			
 			width: 200,
@@ -34,11 +35,16 @@ export default {
 			offsetX: 0,
 			offsetY: 0,
 			content: '',
-			
 		};
+		for (var key in initVal) {
+			if (typeof this.data[key] !== 'undefined' && this.data[key] !== null) {
+				initVal[key] = this.data[key];
+			}						
+		}
+		return initVal;
 	},
 	computed: {
-		fontcolor() {		
+		fontColor() {		
 			if ( this.colorSum < 450 )
 				return "white";
 			else
@@ -48,7 +54,7 @@ export default {
 			var colorValue = this.color.replace('#', '');
 			var bigint = parseInt(colorValue, 16);
 			var r = (bigint >> 16) & 255;
-			var g = (bigint >> 8) & 255;
+			var g = (bigint >> 8) & 255;``
 			var b = bigint & 255;
 			// colorValue = colorValue.replace('rgb(','');
 			// colorValue = colorValue.replace(')','');
@@ -58,9 +64,11 @@ export default {
 		boxStyle() {
 			return {
 				'background-color': this.color, 
-				'color': this.fontcolor,
+				'color': this.fontColor,
 				'left': this.left + 'px',
-				'top': this.top + 'px'
+				'top': this.top + 'px',
+				'width': this.width + 'px',
+				'height': this.height + 'px',
 			};
 		}
 	},
@@ -69,13 +77,16 @@ export default {
 			this.id = this.data.id;
 		},
 		close() {
-
+			console.log(this.index);
+			this.$emit('close', this.index);
 		},
-		save: function() {
-
+		save () {
+			console.log('saved');
+			var data = JSON.parse(JSON.stringify(this.$data));
+			this.$emit('save', this.index, data);
 		},
 		remove () {
-
+			this.$emit('memo-remove', this.id);
 		},
 		generateRandomColor( brightness ) {
 			var r,g,b;
@@ -106,8 +117,21 @@ export default {
 				top = window.innerHeight-50;
 			this.left = left;
 			this.top = top;
+			this.save();
 			// obj.style.zIndex = ++zIndexOffset;
+		},
+		handleResize(ev) {
+			var el = this.$el;
+			if (el.style.width !== this.width+'px'
+				|| el.style.height !== this.height+'px') {
+				this.height = el.style.height.replace('px', '');
+				this.width = el.style.width.replace('px', '');
+				this.save();
+			}
 		}
+	},
+	mounted() {
+		this.save();
 	}
 };
 </script>
